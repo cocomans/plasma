@@ -1,0 +1,280 @@
+
+////////////////////////////////////////////////////////////////////////
+//
+// Main program for Ampere particle code for plasma physics
+//
+////////////////////////////////////////////////////////////////////////
+
+ampere_vlasov.m
+{
+
+  ////////////////////////////////////////////////////////////////////////
+  //
+  // Preprocessing
+  //
+  ////////////////////////////////////////////////////////////////////////
+
+  // calculate the cell face and cell node position
+  cell_info_calc.m
+
+  // initialize particle positions
+  init_part_pos_vel.m {
+
+    // Landau damping simulation
+    landau_initialization.m (NOT DONE)
+      init_cond_clean_up.m
+        moment_calc.m
+      moment_matching.m
+        moment_calc.m
+
+    // Two stream instability simulation
+    tsi_initialization.m (NOT DONE FOR QUIET)
+      init_cond_clean_up.m
+        moment_calc.m
+      moment_matching.m
+        moment_calc.m
+
+    // Ion acoustic
+    iasw_initialization.m (NOT DONE)
+  }
+
+  // calculate initial electric field from particle density
+  moment_calc.m (returns r_f)
+  poisson_solver.m (uses r_f)
+
+  // calculate fluid initial condition
+  moment_calc.m (returns r, s2, P, ru_f)
+  smooth (r, s2, ru_f)
+   
+  // Store into current MomentSolution
+  U =  (r, ru, E)
+
+  // Store into current ParticleSolution and Particles
+  U_p = (r, ru, ru_half, s2, s2_half, P, x, v, cell_loc)
+
+  // Store old from current
+  U_old = U
+  U_p_old = U_p
+
+  // Total energy calculation
+  total_energy_calc uses U, U_p  returns E_tot0 and mv_tot0
+   
+
+  ////////////////////////////////////////////////////////////////////////
+  //
+  // Simulation
+  //
+  ////////////////////////////////////////////////////////////////////////
+
+  while time < tmax {
+
+    // Calculate initial max residual
+    F0 = nlres_init.m uses U,U_old,U_p,U_p_old,Dhat_p
+    F = F0
+
+    ////////////////////////////////////////////////////////////////////////
+    //
+    // Low order solver (k_outer loop)
+    //
+    ////////////////////////////////////////////////////////////////////////
+
+    while (k_outer Picard loop not converged) {
+
+      ////////////////////////////////////////////////////////////////////////
+      //
+      // High order solver loop
+      //   U = si_lo_solver(U,U_old,U_p,U_p_old,Dhat_p)
+      //   U = jfnk
+      //
+      ////////////////////////////////////////////////////////////////////////
+
+      nlres_init()
+
+      if (one specie, order 1) {
+        while (k_inner loop not converged) {
+          (A, rhs) = (dt, s2e_pb, re_f, E_factor = 1.0, 
+                      re, re_old, rue_old, E_source, Dhat_re, Dhat_rue)
+          ru(ELECTRON) = GaussianElimination(A, rhs)
+
+          r(ELECTRON) = uses ru(ELECTRON)
+          E = uses ru(ELECTRON)
+          U = (r(ELECTRON), ru(ELECTRON), E)
+
+          nlres_init()
+        }
+      } 
+
+      if (one specie, order 2) {
+        while (k_inner loop not converged) {
+          (A, rhs) = (dt2_recip, s2e_pb_half, re_f_half, E_factor = 0.5, 
+                      re, re_old, rue_old, E_source, Dhat_re, Dhat_rue)
+          ru(ELECTRON) = GaussianElimination(A, rhs)
+
+          r(ELECTRON) = uses ru(ELECTRON)
+          E = uses ru(ELECTRON)
+          U = (r(ELECTRON), ru(ELECTRON), E)
+
+          nlres_init()
+        }
+      } 
+
+      if (two species, order 1) {
+        while (k_inner loop not converged) {
+          (E_factor, E_source) = ION arrays
+          (A, rhs) = (dt, s2e_pb, re_f, E_factor, 
+                      re, re_old, rue_old, E_source, Dhat_re, Dhat_rue)
+          ru(ELECTRON) = GaussianElimination(A, rhs)
+
+          r(ELECTRON) = uses ru(ELECTRON)
+          E = uses ru(ELECTRON)
+          ru(ION) = uses rui_source, E
+
+          U = (r(ELECTRON), ru(ELECTRON), r(ION), ru(ION), E)
+        }
+      } 
+
+      if (two species, order 2) {
+        while (k_inner loop not converged) {
+          (E_factor, E_source) = ION arrays
+          (A, rhs) = (dt2_recip, s2e_pb_half, re_f_half, E_factor, 
+                      re, re_old, rue_old, E_source, Dhat_re, Dhat_rue)
+          rue = GaussianElimination(A, rhs)
+
+          r(ELECTRON) = uses ru(ELECTRON)
+          E = uses ru(ELECTRON)
+          ru(ION) = uses rui_source, E
+
+          U = (r(ELECTRON), ru(ELECTRON), r(ION), ru(ION), E)
+        }
+      } 
+      //
+      // End of k_inner solver
+      //
+      ////////////////////////////////////////////////////////////////////////
+
+SIMPLE PUSH
+      ////////////////////////////////////////////////////////////////////////
+      //
+      // Push particles (xv_calc.m)
+      //
+      ////////////////////////////////////////////////////////////////////////
+
+      for (each species) {
+        for (each particle) {
+          for (each substep) {
+            while (not converged) {
+
+              // New x based on old x and old v producing new x
+              x = x_solve(x_old_st, v)
+                x_boundary_check.m
+
+              // New v based on cur x and old v
+              v = v_solve(x, v_old_st, E)
+                E_interpolation.m
+
+              // Save current x and v for convergence test
+              x_k = x
+              v_k = v
+            } // convergence loop
+
+            // Set starting x,v for next subcycle
+            x_old_st = x
+            v_old_st = v
+          } // subcycle loop
+
+          // Store new x and v 
+          U_p = (x,v)
+        } // particle loop
+
+        // Moment calculation
+        moment_calc returns r, s2, ru
+        moment_calc returns s2_half, ru_half
+
+        smooth r, s2, ru, s2_half, ru_half
+
+        // store in ParticleSolution (not in MomentSolution)
+        U_p = (r, ru, ru_half, s2, s2_half)
+      } // species loop
+
+      //
+      // End of particle push
+      //
+      ////////////////////////////////////////////////////////////////////////
+
+or RAY TRACE PUSH
+      ////////////////////////////////////////////////////////////////////////
+      //
+      // Push particles (ray_trace_and_tally.m)
+      //
+      ////////////////////////////////////////////////////////////////////////
+
+      for (each species) {
+        for (each particle) {
+          for (each substep) {
+
+            dtau = EFieldIterpolation(based on ORDER)
+            while (not converged) {
+
+              particleRayTrace(moves one particle)
+
+            } // convergence loop
+
+            dtau = EFieldInterpolation for surface cross
+            alter x and v based on this
+
+            // Half moment calculate s2_half, ru_half
+            halfMoment->tallyMomentCalculation();
+
+          } // subcycle loop
+
+          // Full moment calculate r, s2, ru
+          fullMoment->tallyMomentCalculation();
+
+          // Store new x and v for single particle 
+          U_p = (x,v)
+        } // particle loop
+
+        scale r, s2, ru, s2_half, ru_half
+        smooth r, s2, ru, s2_half, ru_half
+
+        // store in ParticleSolution (not in MomentSolution)
+        U_p = (r, ru, ru_half, s2, s2_half)
+      } // species loop
+
+      //
+      // End of particle push
+      //
+      ////////////////////////////////////////////////////////////////////////
+
+      // Calculate new Dhat_p
+      Dhat_make.m
+
+      // Calculate new residual
+      nlres_init.m
+    }
+    //
+    // End of k_outer loop
+    //
+    ////////////////////////////////////////////////////////////////////////
+
+    // Old MomentSolution gets from new ParticleSolution
+    U_old = U_p (r, ru, s2)
+
+    // Old ParticleSolution gets from new ParticleSolution
+    U_p_old = U_p (r, ru, s2)
+    U_p_old = U_p (x, v, cell_loc)
+
+    // Old MomentSolution gets from new MomentSolution
+    U_old = U (E)
+
+    // Set E_vec, E_diff_vec, mv_diff_vec, cc_rms_vec
+
+    // Print summary stuff for time step
+  }
+  //
+  // End of time loop
+  //
+  ////////////////////////////////////////////////////////////////////////
+
+  // Print summary stuff for simulation
+}

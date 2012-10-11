@@ -1,0 +1,7 @@
+set title "Delta momentum vs time (IASW cc=1 order=2)"
+set xlabel "time"
+set ylabel "mv_diff"
+set xrange [0:3000]
+set term png
+set output "output/out_mvdiff_0_133.png"
+plot "output/out_mvdiff_0" with lines lw 2 lc rgb "blue" title "mv_diff"
