@@ -1,0 +1,716 @@
+
+#include "ParticleObjN.h"
+#include "FieldData.h"
+#include "PlasmaData.h"
+#include "vec_funcs.h"
+#include "typevecN.h"
+#include "CurrentTally.h"
+
+
+
+template<int ileft>
+void PushN(PlasmaData* 		pdata,
+				 FieldData* 		fields,
+				 CurrentTally* 		current,
+				 ParticleList* 	plist,
+				 int**				iter_array,
+				 int**				iptcl,
+				 int**				iptcl_new,
+				 int&				nptcls_left,
+				 int&				nptcl_done,
+				 int&				nptcls_process)
+{
+	ParticleObjN<ileft> particles2(*iptcl);
+	typevecN<int,ileft> iter2;
+
+	iter2 = *iter_array;
+
+	// Copy from main array
+	particles2 = *plist;
+
+	// Push
+	particles2.push(pdata,fields,current,iter2,pdata->nSubcycle_max);
+
+	// Write back to main array
+	printf("writing particles back\n");
+
+	//*plist = particles2;
+	for(int j=0;j<ileft;j++)
+	{
+		//printf("iptcl[%i] = %i\n",j,iptcl[0][j]);
+		particles2.write_back(*plist,j);
+	}
+
+	// Condense iptcl list
+	int k = 0;
+	for(int j=0;j<ileft;j++)
+	{
+		bool idone = 0;
+		if(particles2.dt_finished(j) >= pdata->dt)
+		{
+			idone = 1;
+		}
+		else if(iter2(j) >= pdata->nSubcycle_max)
+		{
+			idone = 1;
+		}
+
+		if(!idone)
+		{
+			iptcl_new[0][k] = iptcl[0][j];
+			iter_array[0][k] = iter2(j);
+
+
+			k++;
+		}
+		else
+		{
+			// Accumulate Charge and S2 moment
+
+		}
+
+
+	}
+	nptcls_left = k;
+	nptcl_done = nptcls_process - nptcls_left +1;
+
+	int* iptcl_temp = *iptcl;
+	*iptcl = *iptcl_new;
+	*iptcl_new = iptcl_temp;
+}
+
+template<const int ileft>
+void shrink_push(PlasmaData* 		pdata,
+				 FieldData* 		fields,
+				 CurrentTally* 		current,
+				 ParticleList* 	plist,
+				 int**				iter_array,
+				 int**				iptcl,
+				 int**				iptcl_new,
+				 int&				nptcls_left,
+				 int&				nptcl_done,
+				 int&				nptcls_process)
+{
+	printf("shrink_push with %i ptcls\n",ileft);
+	if((ileft > 0)&&(nptcls_left > 0)){
+	if(ileft == nptcls_left)
+	{
+		PushN<ileft>(pdata,fields,current,plist,
+							iter_array,iptcl,iptcl_new,
+							nptcls_left,nptcl_done,nptcls_process);
+
+	} /* if(ileft == nptcls_left) */
+	else if(ileft > 1)
+	{
+		shrink_push<ileft-1>(pdata,fields,current,plist,
+							iter_array,iptcl,iptcl_new,
+							nptcls_left,nptcl_done,nptcls_process);
+	}
+	}
+
+}
+
+template<>
+void shrink_push<1>(PlasmaData* 		pdata,
+				 FieldData* 		fields,
+				 CurrentTally* 		current,
+				 ParticleList* 	plist,
+				 int**				iter_array,
+				 int**				iptcl,
+				 int**				iptcl_new,
+				 int&				nptcls_left,
+				 int&				nptcl_done,
+				 int&				nptcls_process)
+{
+	if(nptcls_left == 1)
+	{
+		PushN<1>(pdata,fields,current,plist,
+							iter_array,iptcl,iptcl_new,
+							nptcls_left,nptcl_done,nptcls_process);
+
+	} /* if(1 == nptcls_left) */
+
+}
+
+template<>
+void shrink_push<VEC_LENGTH_MAX>(PlasmaData* 		pdata,
+				 FieldData* 		fields,
+				 CurrentTally* 		current,
+				 ParticleList* 	plist,
+				 int**				iter_array,
+				 int**				iptcl,
+				 int**				iptcl_new,
+				 int&				nptcls_left,
+				 int&				nptcl_done,
+				 int&				nptcls_process)
+{
+
+	if(VEC_LENGTH_MAX == nptcls_left)
+	{
+		PushN<VEC_LENGTH_MAX>(pdata,fields,current,plist,
+							iter_array,iptcl,iptcl_new,
+							nptcls_left,nptcl_done,nptcls_process);
+
+	} /* if(ileft == nptcls_left) */
+	else if(VEC_LENGTH_MAX > 1)
+	{
+		shrink_push<VEC_LENGTH_MAX-1>(pdata,fields,current,plist,
+							iter_array,iptcl,iptcl_new,
+							nptcls_left,nptcl_done,nptcls_process);
+	}
+
+
+}
+
+
+
+
+template<int N>
+void ParticleObjN<N>::push(PlasmaData* pdata, FieldData* fields,
+		CurrentTally* currents, typevecN<int,N>& iter, const int nSubcycl_max)
+{
+
+	bool irun = 1;
+
+	// Begin Subcycle
+	while(irun)
+	{
+
+		// Estimate dtau
+		//typevecN<float,N> dtau = estimate_dtau(pdata,fields);
+
+		typevecN<float,N> dtau;
+		//dtau = estimate_dtau(pdata,fields);
+		dtau = 0.001f;
+
+
+		// Begin Picard - Crank-Nicholson
+		//printf("Picard Iteration %i\n",iter(0));
+		ParticleObjN<N> new_ptcl = PicardIterate(pdata,fields,dtau);
+
+
+		// Check Cell crossing
+
+		// Handle Cell crossing
+
+		// Accumulate Current
+		printf("Accumulate Current %i\n",iter(0));
+		new_ptcl.accumulate_current(pdata,currents,dtau);
+
+		*this = new_ptcl;
+
+
+		dt_finished += dtau;
+
+		iter++;
+
+		// If this is a vector list, then we need to check the exit condition
+		if(N > 1)
+		{
+			irun = !check_exit(pdata,iter,nSubcycl_max);
+
+		}
+		else
+		{
+
+			if(iter(0) >= nSubcycl_max)
+				break;
+		}
+
+	}
+
+}
+
+
+
+template<int N>
+ParticleObjN<N> ParticleObjN<N>::PicardIterate(PlasmaData* pdata, FieldData* fields, const typevecN<float,N>& dtau)
+{
+
+	int iter;
+
+	typevecN<float3,N> x_half;
+	typevecN<float3,N> v_half;
+
+	typevecN<float3,N> x_old = make_float3N(px,py,pz);
+	typevecN<float3,N> v_old = make_float3N(vx,vy,vz);
+
+	typevecN<float3,N> x_next = x_old;
+	typevecN<float3,N> v_next = v_old;
+
+
+
+	typevecN<float3,N> x_last;
+	//typevecN<float3,N> v_last = make_float3N(vx,vy,vz);
+	typevecN<float3,N> accel;
+
+	//typevecN<float3,N> div_a;
+
+	float3 inv_divs = make_float3(pdata->didx,pdata->didy,pdata->didz);
+
+
+
+	typevecN<float,N> residual;
+
+	double avg_resid  = 10.0f * pdata->epsilon_r;
+
+	int niter_max = pdata -> niter_max;
+
+/*
+	accel = get_accel(fields,x_old,v_old);
+
+	div_a = calc_div_a(pdata,fields,accel);
+
+	v_next += (accel + div_a * dtau * 0.5f)* dtau;
+
+	v_half = (v_next + v_old) * 0.5f;
+
+	x_next = (v_half * inv_divs) * dtau + x_old;
+
+	accel = get_accel(fields,x_half,v_half);
+
+	v_next = accel * dtau + v_old;
+
+	v_half = (v_next + v_old) * 0.5f;
+
+	residual = l1normN((x_next - x_old)/dtau - v_half*inv_divs)/l1normN(v_old*inv_divs);
+
+	avg_resid = 0;
+
+	for(int i=0;i<N;i++)
+	{
+		avg_resid += (residual(i));
+	}
+	printf("residual = %e\n",avg_resid/(2.0 * N));
+	//v_next = v_old;
+*/
+	iter = 0;
+
+
+
+	while(avg_resid > pdata->epsilon_r)
+	{
+
+		v_half = (v_next + v_old) * 0.5f;
+
+		x_last = x_next;
+
+		x_next = (v_half * inv_divs) * dtau + x_old;
+
+		x_half = (x_next + x_old) * 0.5f;
+
+		accel = get_accel(fields,x_half,v_half);
+
+		//v_last = v_next;
+
+		v_next = accel * dtau + v_old;
+
+		//v_half = (v_next + v_old) * 0.5f;
+
+		//residual = l1normN((x_next - x_old)/dtau - v_half*inv_divs);
+
+
+		residual = l1normN(x_next - x_last)/l1normN(x_next);
+
+		avg_resid = 0;
+
+		for(int i=0;i<N;i++)
+		{
+			avg_resid += (residual(i));
+		}
+
+		avg_resid /= (float)N;
+
+		//printf("residual = %e\n",avg_resid);
+
+		iter++;
+
+		if(iter > niter_max)
+			break;
+
+	}
+
+
+	// Check Boundary Conditions
+
+	ParticleObjN<N> new_ptcl = *this;
+
+	for(int i=0;i<N;i++)
+	{
+
+		int ishift;
+		ishift = floorf(x_next(i).x);
+		new_ptcl.px(i) = x_next(i).x - ishift;
+		new_ptcl.ix(i) = ix(i) + ishift;
+
+		//printf("for x=%f ishift = %i, index = %i pos = %f \n",
+		//		x_next(i).x,ishift,new_ptcl.ix(i),new_ptcl.px(i));
+
+		ishift = floorf(x_next(i).y);
+		new_ptcl.py(i) = x_next(i).y - ishift;
+		new_ptcl.iy(i) = iy(i) + ishift;
+
+		ishift = floorf(x_next(i).z);
+		new_ptcl.pz(i) = x_next(i).z - ishift;
+		new_ptcl.iz(i) = iz(i) + ishift;
+
+		new_ptcl.ix(i) = ((new_ptcl.ix(i)%pdata->nx)+pdata->nx)%pdata->nx;
+		new_ptcl.iy(i) = ((new_ptcl.iy(i)%pdata->ny)+pdata->ny)%pdata->ny;
+		new_ptcl.iz(i) = ((new_ptcl.iz(i)%pdata->nz)+pdata->nz)%pdata->nz;
+
+
+/*
+		if((new_ptcl.px(i) < 0.0f)||(new_ptcl.px(i) > 1.0f)
+			||(new_ptcl.py(i) < 0.0f)||(new_ptcl.py(i) > 1.0f)
+			||(new_ptcl.pz(i) < 0.0f)||(new_ptcl.pz(i) > 1.0f)
+			||(new_ptcl.ix(i) >= pdata->nx)||(new_ptcl.iy(i) >= pdata->ny))
+		{
+			printf("Warning position out of bounds\n");
+		}
+
+*/
+
+
+		new_ptcl.vx(i) = v_next(i).x;
+		new_ptcl.vy(i) = v_next(i).y;
+		new_ptcl.vz(i) = v_next(i).z;
+
+	}
+
+	return new_ptcl;
+
+}
+
+
+template<int N>
+typevecN<float3,N> ParticleObjN<N>::calc_div_a(PlasmaData* pdata, FieldData* fields,const typevecN<float3,N>& accel)
+{
+	// Returns divergence of acceleration dotted into velocity
+
+	/*
+	 * Tensor form:
+	 * [0].x [1].x [2].x
+	 * [0].y [1].y [2].y
+	 * [0].z [1].z [2].z
+	 */
+
+	typevecN<float3,N> divB[3];
+
+	typevecN<float3,N> div_vxB[3];
+
+	typevecN<float3,N> velocity = make_float3N(vx,vy,vz);
+
+	typevecN<float,N> inv_velocity = 1.0f / sqrt(vx*vx + vy*vy + vz*vz);
+
+	typevecN<float3,N> Bvec = get_B<FieldData_deriv_f>(fields,px,py,pz);
+
+
+
+	typevecN<float3,N> axB = cross_productN(accel,Bvec);
+
+
+	// v x B jacobian
+
+	typevecN<float3,N> div_a[3];
+	div_a[0] = axB * inv_velocity;
+	div_a[1] = axB * inv_velocity;
+	div_a[2] = axB * inv_velocity;
+
+	divB[0] = get_B<FieldData_deriv_dfdx>(fields,px,py,pz);
+
+	divB[1] = get_B<FieldData_deriv_dfdy>(fields,px,py,pz);
+
+	divB[2] = get_B<FieldData_deriv_dfdz>(fields,px,py,pz);
+
+	div_vxB[0] = cross_productN(velocity,divB[0]);
+	div_vxB[1] = cross_productN(velocity,divB[1]);
+	div_vxB[2] = cross_productN(velocity,divB[2]);
+
+
+	div_a[0] += div_vxB[0];
+	div_a[1] += div_vxB[1];
+	div_a[2] += div_vxB[2];
+
+	// Electric Field Jacobian
+
+	typevecN<float3,N> divE[3];
+
+	divE[0] = get_E<FieldData_deriv_dfdx>(fields,px,py,pz);
+
+	divE[1] = get_E<FieldData_deriv_dfdy>(fields,px,py,pz);
+
+	divE[2] = get_E<FieldData_deriv_dfdz>(fields,px,py,pz);
+
+	// dot div_a into velocity
+	typevecN<float3,N> result;
+
+	result = div_a[0]*velocity + div_a[1]*velocity + div_a[2]*velocity;
+/*
+	for(int i=0;i<N;i++)
+	{
+		printf("div_a = %e %e %e\n",result(i).x,result(i).y,result(i).z);
+	}
+*/
+	return result;
+
+
+
+
+}
+
+template<int N>
+typevecN<float,N> ParticleObjN<N>::estimate_dtau(PlasmaData* pdata, FieldData* fields)
+{
+	typevecN<float,N> dtau;
+
+	typevecN<float3,N> accel;
+	typevecN<float3,N> div_a;
+	typevecN<float,N> alpha,beta,gamma2;
+
+	// Calculate acceleration
+	accel = get_accel(fields,make_float3N(px,py,pz),make_float3N(vx,vy,vz));
+
+	// Calculate div_a dot v
+	div_a = calc_div_a(pdata,fields,accel);
+
+	// Using the l1norm instead of the l2norm for speed reasons
+	typevecN<float,N> norm_diva = l1normN(div_a);
+	typevecN<float,N> norm_a = l1normN(accel);
+
+	alpha = (abs(norm_diva) + abs(norm_a))* 0.5f;
+	beta =  (abs(norm_a) *pdata->epsilon_r + l1normN(make_float3N(vx,vy,vz)));
+	gamma2 = pdata->epsilon_a;
+
+	typevecN<float,N> d = 1.0f/sqrt(alpha);
+
+	dtau = max(gamma2*d,beta*d*d);
+
+	return dtau;
+
+}
+
+template<int N>
+void ParticleObjN<N>::accumulate_current(PlasmaData* pdata, CurrentTally* currents,
+										const typevecN<float,N>& dtau)
+{
+	for(int i=0;i<N;i++)
+	{
+		currents->tally(px(i),py(i),pz(i),
+						vx(i),vy(i),vz(i),
+						ix(i),iy(i),iz(i),
+						dtau(i)/pdata->dt);
+	}
+}
+
+
+
+template<int N>
+bool ParticleObjN<N>::check_exit(PlasmaData* pdata,const typevecN<int,N>& iter, const int nSubcycl_max)
+{
+	bool result = 0;
+
+	for(int i=0;i<N;i++)
+	{
+		if(dt_finished(i) >= pdata->dt)
+		{
+			result = 1;
+			break;
+		}
+		else if(iter(i) >= nSubcycl_max)
+		{
+			result = 1;
+			break;
+		}
+	}
+
+	return result;
+}
+
+template<int N>
+template<enum FieldData_deriv ideriv>
+typevecN<float3,N> ParticleObjN<N>::get_B(FieldData* fields, const typevecN<float3,N>& x)
+{
+	typevecN<float3,N> B_out;
+
+	for(int i=0; i<N; i++)
+	{
+		float3 pos;
+		int3 index;
+		int ishift;
+
+		ishift = floorf(x(i).x);
+		pos.x = x(i).x - ishift;
+		index.x = ix(i) + ishift;
+
+		ishift = floorf(x(i).y);
+		pos.y = x(i).y - ishift;
+		index.y = iy(i) + ishift;
+
+		ishift = floorf(x(i).z);
+		pos.z = x(i).z - ishift;
+		index.z = iz(i) + ishift;
+
+		//index.x = ((index.x%fields->nx)+fields->nx)%fields->nx;
+		//index.y = ((index.y%fields->ny)+fields->ny)%fields->ny;
+		//index.z = ((index.z%fields->nz)+fields->nz)%fields->nz;
+
+
+
+		B_out(i).x = fields->intrpB(pos.x,pos.y,pos.z,
+											index.x,index.y,index.z,0,ideriv);
+		B_out(i).y = fields->intrpB(pos.x,pos.y,pos.z,
+											index.x,index.y,index.z,1,ideriv);
+		B_out(i).z = fields->intrpB(pos.x,pos.y,pos.z,
+											index.x,index.y,index.z,2,ideriv);
+
+	}
+
+	return B_out;
+}
+
+template<int N>
+template<enum FieldData_deriv ideriv>
+typevecN<float3,N> ParticleObjN<N>::get_B(FieldData* fields,
+						const typevecN<float,N>& x,
+						const typevecN<float,N>& y,
+						const typevecN<float,N>& z)
+{
+	typevecN<float3,N> B_out;
+
+	for(int i=0; i<N; i++)
+	{
+		B_out(i).x = fields->intrpB(x(i),y(i),z(i),
+											ix(i),iy(i),iz(i),0,ideriv);
+		B_out(i).y = fields->intrpB(x(i),y(i),z(i),
+											ix(i),iy(i),iz(i),1,ideriv);
+		B_out(i).z = fields->intrpB(x(i),y(i),z(i),
+											ix(i),iy(i),iz(i),2,ideriv);
+	}
+
+	return B_out;
+}
+
+
+template<int N>
+template<enum FieldData_deriv ideriv>
+typevecN<float3,N> ParticleObjN<N>::get_E(FieldData* fields, const typevecN<float3,N>& x)
+{
+	typevecN<float3,N> E_out;
+
+	for(int i=0; i<N; i++)
+	{
+		float3 pos;
+		int3 index;
+		int ishift;
+
+		ishift = floorf(x(i).x);
+		pos.x = x(i).x - ishift;
+		index.x = ix(i) + ishift;
+
+		ishift = floorf(x(i).y);
+		pos.y = x(i).y - ishift;
+		index.y = iy(i) + ishift;
+
+
+		ishift = floorf(x(i).z);
+		pos.z = x(i).z - ishift;
+		index.z = iz(i) + ishift;
+
+
+
+		//index.x = ((index.x%fields->nx)+fields->nx)%fields->nx;
+		//index.y = ((index.y%fields->ny)+fields->ny)%fields->ny;
+		//index.z = ((index.z%fields->nz)+fields->nz)%fields->nz;
+
+
+
+		E_out(i).x = fields->intrpE(pos.x,pos.y,pos.z,
+											index.x,index.y,index.z,0,ideriv);
+		E_out(i).y = fields->intrpE(pos.x,pos.y,pos.z,
+											index.x,index.y,index.z,1,ideriv);
+		E_out(i).z = fields->intrpE(pos.x,pos.y,pos.z,
+											index.x,index.y,index.z,2,ideriv);
+
+		//printf("E_out(%i) = %e, %e, %e\n",i,E_out(i).x,E_out(i).y,E_out(i).z);
+	}
+
+	return E_out;
+}
+
+template<int N>
+template<enum FieldData_deriv ideriv>
+typevecN<float3,N> ParticleObjN<N>::get_E(FieldData* fields,
+						const typevecN<float,N>& x,
+						const typevecN<float,N>& y,
+						const typevecN<float,N>& z)
+{
+	typevecN<float3,N> E_out;
+
+	for(int i=0; i<N; i++)
+	{
+		E_out(i).x = fields->intrpE(x(i),y(i),z(i),
+											ix(i),iy(i),iz(i),0,ideriv);
+		E_out(i).y = fields->intrpE(x(i),y(i),z(i),
+											ix(i),iy(i),iz(i),1,ideriv);
+		E_out(i).z = fields->intrpE(x(i),y(i),z(i),
+											ix(i),iy(i),iz(i),2,ideriv);
+	}
+
+	return E_out;
+}
+
+template<int N>
+typevecN<float3,N> ParticleObjN<N>::get_accel(FieldData* fields,
+							const typevecN<float3,N>& x,
+							const typevecN<float3,N>& v)
+{
+	typevecN<float3,N> accel;
+
+	typevecN<float3,N> E;
+	typevecN<float3,N> B;
+
+	E = get_E<FieldData_deriv_f>(fields,x);
+
+	B = get_B<FieldData_deriv_f>(fields,x);
+
+	accel = E + cross_productN(v,B);
+
+	accel = accel * fields->q2m[species];
+	return accel;
+
+}
+
+
+
+
+
+
+ploop<VEC_LENGTH_MAX> dummy_ploop;
+
+ploop<16> DummyFUNCTION(PlasmaData* pdata,FieldData* fields,
+		CurrentTally* currents,typevecN<int,16>& iter,const int nSubcycl_max)
+{
+	ploop<16> ploop_out;
+	ploop_out.particle.push(pdata,fields,currents,iter,nSubcycl_max);
+
+	return ploop_out;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
