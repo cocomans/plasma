@@ -1,6 +1,12 @@
 PlasmaApp: A multi-architecture implicit particle-in-cell proxy
 =========================================
-
+PlasmaApp is a flexible implicit charge and energy conserving implicit PIC framework.
+This codes aims to demonstrate the potential of using a fluid plasma model to accelerate a kinetic model 
+through a High-Low order system coupling. The multi-granularity of this problem gives it the ability to 
+map well to emerging heterogeneous architectures with multiple levels of parallelism. Additionally this problem 
+maps very well to very fine parallel architectures, such as GPUs, since the vast majority of the work is 
+encapsulated in the particle system, a trivially parallel problem. This approach also has applicability to 
+very large scale systems, potential exascale, due to the large amount of particle work per communication.
 
 ### Building 
 
@@ -14,12 +20,18 @@ Be sure to use the parallel build option <code>-j N</code> where N is the number
 threads to use. 
 
 Note: Double precision is toggled in the file PlasmaData.h via the preprocessor define
-DOUBLE_PRECISION. to use single precision simply comment out this line of code.
+<code>DOUBLE_PRECISION</code>. to use single precision simply comment out this line of code.
 
 Note 2: MPI libraries may be different on your machine. You may have to edit the makefile
 to use the correct one.
 
-Note 3: To build with cuda append <code>USECUDA=1</code> to the make command
+#### Make arguments 
+<dt><code>USECUDA=1</dt></code>
+<dd> Enables and builds CUDA parts of the code (Requires CUDA 5.0 or later)
+
+<dt><code>NOHANDVEC=1</dt></code>
+<dd> Disables hand vectorization
+
 
 
 
@@ -74,4 +86,4 @@ running the Two Stream Instability problem
 <dd>run the lo order solver on all nodes
 
 <dt><code>--runid #</dt></code>
-<dd>Specify output file number. 
+<dd>Specify benchmark output file number. 
