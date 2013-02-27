@@ -8,6 +8,10 @@ maps very well to very fine parallel architectures, such as GPUs, since the vast
 encapsulated in the particle system, a trivially parallel problem. This approach also has applicability to 
 very large scale systems, potential exascale, due to the large amount of particle work per communication.
 
+The initial C++ implementation targets hybrid GPU + Multi-Core systems, but will preserve the flexibility to be easily implemented on other architectures.  
+
+This flexibility will be accomplished by separating the physics algorithms from the underlying architecture considerations through the use of C++ templates and class inheritance.
+
 ### Building 
 
 <dt><code>$>gmake</code></dt>
