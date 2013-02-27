@@ -12,6 +12,8 @@ The initial C++ implementation targets hybrid GPU + Multi-Core systems, but will
 
 This flexibility will be accomplished by separating the physics algorithms from the underlying architecture considerations through the use of C++ templates and class inheritance.
 
+
+
 ### Building 
 
 <dt><code>$>gmake</code></dt>
@@ -34,7 +36,7 @@ to use the correct one.
 <dd> Enables and builds CUDA parts of the code (Requires CUDA 5.0 or later)
 
 <dt><code>NOHANDVEC=1</dt></code>
-<dd> Disables hand vectorization
+<dd> Disables hand vectorization, This should be used if your machine does not support AVX
 
 
 
