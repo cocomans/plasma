@@ -30,7 +30,7 @@ There are several test problems currently implemented.
 2. Ion Acoustic Shock
 
 
-running the Two Stream Instability problem 
+running the Two Stream Instability problem
 
 <dt><code>$> mpirun -N $NUM_NODES -n $NUM_TASKS ./bin/TwoStream_test -np $NUM_PTCLS -nx 32 -Lx 1 -dt 0.5 -s 100</code></dt>
 
