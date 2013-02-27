@@ -73,11 +73,26 @@ running the Two Stream Instability problem
 <dt><code>-ns #</dt></code>
 <dd>Number of particle spiecies
 
+<dt><code>--epsilon #</dt></code>
+<dd>Specify tolerance of particle picard loop
+
+<dt><code>--nSpatial #</dt></code>
+<dd>Number of spatial dimensions to use
+
+<dt><code>-nVel #</dt></code>
+<dd>Number of velocity dimensions
+
+<dt><code>--plist-cpu #</dt></code>
+<dd>Which CPU particle list optimization to use 0=default, 1=sorted
+
 <dt><code>--min-subcycles #</dt></code>
 <dd>Minimum number of subcycles to use during HO particle push
 
 <dt><code>--num-cores #</dt></code>
 <dd>number of cpu cores to use for shared memory particle push.
+
+<dt><code>--gpu-mult #</dt></code>
+<dd>Multiplier for number of particles to run on gpu vs multi-core for load balancing.
 
 <dt><code>-g</dt></code>
 <dd>Turns on plotting
