@@ -10,7 +10,7 @@ PlasmaApp: A multi-architecture implicit particle-in-cell proxy
 <dt><code>$>gmake tests</code></dt>
 <dd>build all of the test routines
 
-Be sure to use the parallel build option <dt><code>-j N</dt></code> where N is the number of
+Be sure to use the parallel build option <code>-j N</code> where N is the number of
 threads to use. 
 
 Note: Double precision is toggled in the file PlasmaData.h via the preprocessor define
@@ -19,7 +19,7 @@ DOUBLE_PRECISION. to use single precision simply comment out this line of code.
 Note 2: MPI libraries may be different on your machine. You may have to edit the makefile
 to use the correct one.
 
-Note 3: To build with cuda append <dt><code>USECUDA=1</dt></code> to the make command
+Note 3: To build with cuda append <code>USECUDA=1</code> to the make command
 
 
 
