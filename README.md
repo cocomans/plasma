@@ -22,8 +22,8 @@ to use the correct one.
 Note 3: To build with cuda append USECUDA=1 to the make command
 
 
-#############################
-########## Running ##########
+
+### Running
 
 There are several test problems currently implemented.
 1. Two Stream Instability
@@ -31,46 +31,47 @@ There are several test problems currently implemented.
 
 
 running the Two Stream Instability problem 
-PlasmaApp3D $> mpirun -N $NUM_NODES -n $NUM_TASKS ./bin/TwoStream_test -np $NUM_PTCLS -nx 32 -Lx 1 -dt 0.5 -s 100
 
-PlasmaApp3D $> mpirun -N $NUM_NODES -n $NUM_TASKS ./bin/IonAcoustic_test -np $NUM_PTCLS -nx 128 -Lx 144 -dt 0.5 -s 1000
+<dt><code>$> mpirun -N $NUM_NODES -n $NUM_TASKS ./bin/TwoStream_test -np $NUM_PTCLS -nx 32 -Lx 1 -dt 0.5 -s 100</code></dt>
+
+<dt><code>$> mpirun -N $NUM_NODES -n $NUM_TASKS ./bin/IonAcoustic_test -np $NUM_PTCLS -nx 128 -Lx 144 -dt 0.5 -s 1000</code></dt>
 
 
-##############################
-### Command Line Arguments ###
 
--nx #, -ny #, -nz #
-	Number of cells in the x, y, and z dimensions
+### Command Line Arguments
+
+<dt><code>-nx #, -ny #, -nz #</dt></code>
+<dd>Number of cells in the x, y, and z dimensions
 	
--Lx #, -Ly #, -Lz #
-	System Length in debye lengths
+<dt><code>-Lx #, -Ly #, -Lz #</dt></code>
+<dd>System Length in debye lengths
 	
--x0 #, -y0 #, -z0 #
-	System origin
+<dt><code>-x0 #, -y0 #, -z0 #</dt></code>
+<dd>System origin
 
---vec_length #
-	Length of particle list object for cpu particle push
+<dt><code>--vec_length #</dt></code>
+<dd>Length of particle list object for cpu particle push
 
--dt #
-	time step size in electron plasma frequency
+<dt><code>-dt #</dt></code>
+<dd>time step size in electron plasma frequency
 
--np #
-	Number of particles per mpi task
+<dt><code>-np #</dt></code>
+<dd>Number of particles per mpi task
 	
--ns #
-	Number of particle spiecies
+<dt><code>-ns #</dt></code>
+<dd>Number of particle spiecies
 
---min-subcycles #
-	Minimum number of subcycles to use during HO particle push
+<dt><code>--min-subcycles #</dt></code>
+<dd>Minimum number of subcycles to use during HO particle push
 
---num-cores #
-	number of cpu cores to use for shared memory particle push.
+<dt><code>--num-cores #</dt></code>
+<dd>number of cpu cores to use for shared memory particle push.
 
--g
-	Turns on plotting
+<dt><code>-g</dt></code>
+<dd>Turns on plotting
 
---lo-all
-	run the lo order solver on all nodes
+<dt><code>--lo-all</dt></code>
+<dd>run the lo order solver on all nodes
 
---runid #
-	Specify output file number. 
+<dt><code>--runid #</dt></code>
+<dd>Specify output file number. 
