@@ -1137,7 +1137,7 @@ void FieldDataCPU2D::intrpAccel(realkind x, realkind y, realkind z,
 
 
 	// ixm, iym
-	Ezt[1] = getETz<2>(ixm,iym,iz);
+	Ezt[0] = getETz<2>(ixm,iym,iz);
 
 	// ix, iym
 	Ext[0] = getETz<0>(ix,iym,iz);
@@ -1412,6 +1412,7 @@ void FieldDataCPU2D::copy_from(FieldData* src)
 
 
 
+
 #pragma omp parallel
 	{
 		int tid = omp_get_thread_num();
@@ -1454,6 +1455,7 @@ void FieldDataCPU2D::copy_from(FieldData* src)
 	}
 
 	memcpy(q2m,src->q2m,nspecies*sizeof(realkind));
+
 }
 
 realkind FieldDataCPU2D::evaluate_energy(void)
@@ -1485,7 +1487,7 @@ realkind FieldDataCPU2D::evaluate_energy(void)
 		}
 	}
 
-	realkind energy = 0.5 *(Emag/(qe2me*qe2me*epsilon_naught))*pdata->dxdi*pdata->dydi*pdata->dzdi;
+	realkind energy = 0.5 *((Emag+Bmag)/(qe2me*qe2me*epsilon_naught))*pdata->dxdi*pdata->dydi*pdata->dzdi;
 
 	return energy;
 
@@ -1533,14 +1535,17 @@ void FieldDataCPU2D::plot(PlasmaData* pdata,int position, int plane = 0,
 
 	float* x_vals;
 	float* y_vals;
+
+	float* dx_vals;
+	float* dy_vals;
 	float* z_vals;
 
 	float* vals_in;
 
 	if(plane == 0)
 	{
-		nxp = pdata->nx;
-		nyp = pdata->ny;
+		nxp = pdata->nx+1;
+		nyp = pdata->ny+1;
 
 		dxp = pdata->dxdi;
 		dyp = pdata->dydi;
@@ -1556,8 +1561,8 @@ void FieldDataCPU2D::plot(PlasmaData* pdata,int position, int plane = 0,
 	}
 	else if(plane == 1)
 	{
-		nxp = pdata->nx;
-		nyp = pdata->nz;
+		nxp = pdata->nx+1;
+		nyp = pdata->nz+1;
 
 		dxp = pdata->dxdi;
 		dyp = pdata->dzdi;
@@ -1573,8 +1578,8 @@ void FieldDataCPU2D::plot(PlasmaData* pdata,int position, int plane = 0,
 	}
 	else if(plane == 2)
 	{
-		nxp = pdata->ny;
-		nyp = pdata->nz;
+		nxp = pdata->ny+1;
+		nyp = pdata->nz+1;
 
 		dxp = pdata->dydi;
 		dyp = pdata->dzdi;
@@ -1596,13 +1601,18 @@ void FieldDataCPU2D::plot(PlasmaData* pdata,int position, int plane = 0,
 	y_vals = (float*)malloc(nxp*nyp*sizeof(float));
 	z_vals = (float*)malloc(nxp*nyp*sizeof(float));
 
+	dx_vals = (float*)malloc(nxp*nyp*sizeof(float));
+	dy_vals = (float*)malloc(nxp*nyp*sizeof(float));
+
+	float scale = sqrt(pdata->Lx*pdata->Ly/(pdata->nx*pdata->ny))/2;
+
 	if(plane == 0)
 	{
 		k = position;
 
-		for(j=0;j<pdata->ny;j++)
+		for(j=0;j<=pdata->ny;j++)
 		{
-			for(i=0;i<pdata->nx;i++)
+			for(i=0;i<=pdata->nx;i++)
 			{
 				x_vals[i_out] = dxp*i_out + x0;
 				y_vals[j_out] = dyp*j_out + y0;
@@ -1618,7 +1628,15 @@ void FieldDataCPU2D::plot(PlasmaData* pdata,int position, int plane = 0,
 				}
 				else
 				{
-					z_vals[i_out+nxp*j_out] = getB(i,j,k,icomponent);
+					if(icomponent < 3)
+						z_vals[i_out+nxp*j_out] = getB(i,j,k,icomponent);
+					else if(icomponent == 3)
+						z_vals[i_out+nxp*j_out] = sqrt(
+								powf(getB(i,j,k,0),2.0)
+								+ powf(getB(i,j,k,1),2.0)
+								+ powf(getB(i,j,k,2),2.0));
+						dx_vals[i_out+nxp*j_out] = getB(i,j,k,0)*scale/z_vals[i_out+nxp*j_out];
+						dy_vals[i_out+nxp*j_out] = getB(i,j,k,1)*scale/z_vals[i_out+nxp*j_out];
 				}
 
 			}
@@ -1681,11 +1699,17 @@ void FieldDataCPU2D::plot(PlasmaData* pdata,int position, int plane = 0,
 	}
 
 	gnuplot_plot_xyz(plot_handle,x_vals,y_vals,z_vals,nxp,nyp,"Fields");
+	gnuplot_cmd(plot_handle,"unset hidden3d");
+	gnuplot_cmd(plot_handle,"set view map");
+	gnuplot_plot_vector(plot_handle,x_vals,y_vals,z_vals,dx_vals,dy_vals,nxp,nyp,"Fields");
 
 
 	free(x_vals);
 	free(y_vals);
 	free(z_vals);
+
+	free(dx_vals);
+	free(dy_vals);
 
 
 

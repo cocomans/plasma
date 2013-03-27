@@ -15,7 +15,6 @@
 
 #include "FieldData.h"
 
-class MomentSolution;
 
 
 
@@ -60,10 +59,11 @@ class FieldDataGPU : public FieldData
 public:
 
 	__host__ __device__
-	~FieldDataGPU()
-	{
+	FieldDataGPU(){}
 
-	}
+	__host__ __device__
+	~FieldDataGPU(){}
+
 	__host__
 	void FieldFree(void)
 	{
@@ -134,6 +134,12 @@ public:
 	realkind intrpB(realkind x, realkind y, realkind z,
 				int icellx, int icelly, int icellz,
 				const int icomponent, const enum FieldData_deriv ideriv);
+
+	__device__
+	void intrpAccel(realkind x, realkind y, realkind z,
+					realkind vx,realkind vy, realkind vz,
+					int icellx, int icelly, int icellz,
+/* Outputs */		realkind &accelx,realkind& accely, realkind& accelz);
 
 	/*-------------------------------------------------------------------------*/
 	/**

@@ -25,15 +25,15 @@ public:
 		alpha = 0.001;
 		title = "Island Coalescence";
 
-		B0 = sqrt(pdata->n0*pdata->Te*8.0*pi_const);
+		B0 = 0.3;
 
-		lambda = B0/sqrt(pdata->mspecies[0]/pdata->mspecies[1]);
+		lambda = 1.0/sqrt(pdata->mspecies[0]/pdata->mspecies[1]);
 
 		cdf = new island_coalescence(0.25,
 				lambda,
 				pdata->Lx,
 				pdata->Ly,
-				pdata->xmin,
+				0.0,
 				pdata->ymin,
 				pdata->nx,
 				pdata->ny);

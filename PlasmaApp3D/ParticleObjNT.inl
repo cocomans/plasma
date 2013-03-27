@@ -6,6 +6,8 @@
 #include "typevecN.h"
 #include "CurrentTally.h"
 #include "ShapeFunctions.h"
+#include "PExitCheck.h"
+//#include "PExitCheckDefines.h"
 
 
 
@@ -23,7 +25,9 @@ void PushNT(PlasmaData* 		pdata,
 				 long long int&				nSubSteps_done)
 {
 //	printf("Doing a shrink push\n");
-	ParticleObjNT<ileft,nSpatial,nVel,iEM> particles2(*iptcl);
+	PExitCheckCPU* ExitChecker = new PExitCheckCPU(pdata->dt,pdata->nSubcycle_max);
+
+	ParticleObjNT<ileft,nSpatial,nVel,iEM> particles2(*iptcl,ExitChecker);
 	typevecN<int,ileft> iter2;
 
 
@@ -152,12 +156,12 @@ void ParticleObjNT<N,nSpatial,nVel,iEM>::push(PlasmaData* pdata, FieldData* fiel
 {
 
 	bool irun = 1;
-	typevecN<typevecN<realkind,N>,nVel> accel;
-	accel = get_accel(fields,position,velocity);
-
+//	typevecN<typevecN<realkind,N>,nVel> temp;
+//	temp = get_B<FieldData_deriv_f>(fields,position,iposition);
+//
 //	for(int i=0;i<N;i++)
-//		printf("accel[%i] = %f(%f,%f)\n",pid[i],accel(0)(i),position(0)(i),velocity(0)(i));
-
+//		printf("accel[%i] = %f(%i, %i,%f,%f)\n",pid[i],temp(0)(i),iposition(0)(i),iposition(1)(i),position(0)(i),velocity(0)(i));
+//
 
 	// Begin Subcycle
 	while(irun)
@@ -182,34 +186,7 @@ void ParticleObjNT<N,nSpatial,nVel,iEM>::push(PlasmaData* pdata, FieldData* fiel
 		piccard_timer->stop();
 #endif
 
-		// Check Cell crossing
 
-		// Handle Cell crossing
-/*		if(pdata->ndimensions == 1)
-		{
-			for(int i=0;i<N;i++)
-			{
-				ix(i) = ix(i) + icross(i);
-				px(i) = px(i) - icross(i);
-
-				if(icross(i) != 0)
-				{
-					printf("Particle %i at boundary %f, %i\n",i,px(i),ix(i));
-				}
-			}
-
-		}
-*/
-		// Accumulate Current
-		//printf("Accumulate Current %i\n",iter(0));
-		//accumulate_current(pdata,currents,v_half,dtau);
-
-
-//		for(int i=0;i<N;i++)
-//		{
-//			if(dtau(i) < 1.0e-6*pdata->dt)
-//				printf("Warning dtau(%i) at %i = %e is really small\n",pid[i],iter(i),dtau(i));
-//		}
 
 		dt_finished += dtau;
 
@@ -217,21 +194,25 @@ void ParticleObjNT<N,nSpatial,nVel,iEM>::push(PlasmaData* pdata, FieldData* fiel
 			iter(i) = iter(i) + (!ifinished(i));
 
 		// If this is a vector list, then we need to check the exit condition
-		if(N > 1)
-		{
-			irun = !check_exit(pdata,iter,nSubcycl_max);
 
-		}
-		else
-		{
-
-			if(iter(0) >= nSubcycl_max)
-				irun = 0;
-			else if(dt_finished(0) >= pdata->dt)
-				irun = 0;
-		}
+		irun = !check_exit(pdata,iter,nSubcycl_max);
+//		irun = 1;
 
 	}
+
+	typevecN<int,nSpatial> dims;
+
+	if(nSpatial > 0)
+		dims(0) = pdata->nx;
+	if(nSpatial > 1)
+		dims(1) = pdata->ny;
+	if(nSpatial > 2)
+		dims(2) = pdata->nz;
+
+	for(int i=0;i<nSpatial;i++)
+		iposition(i) = imod(imod(iposition(i),dims(i))+dims(i),dims(i));
+
+
 
 
 }
@@ -247,14 +228,15 @@ void ParticleObjNT<N,nSpatial,nVel,iEM>::PicardIterate(PlasmaData* pdata, FieldD
 
 	typevecN<typevecN<realkind,N>,nSpatial> position_half;
 	typevecN<typevecN<realkind,N>,nSpatial> position_next;
-	typevecN<typevecN<realkind,N>,nSpatial> position_last;
+//	typevecN<typevecN<realkind,N>,nSpatial> position_last;
 
 	typevecN<typevecN<realkind,N>,nVel> velocity_half;
 	typevecN<typevecN<realkind,N>,nVel> velocity_next;
-	typevecN<typevecN<realkind,N>,nVel> velocity_last;
+//	typevecN<typevecN<realkind,N>,nVel> velocity_last;
 
 
 	typevecN<realkind,N> dtau = dtau0;
+//	typevecN<realkind,N> dtau_last;
 
 
 	typevecN<typevecN<realkind,N>,nVel> accel;
@@ -299,7 +281,7 @@ void ParticleObjNT<N,nSpatial,nVel,iEM>::PicardIterate(PlasmaData* pdata, FieldD
 
 
 	for(int i=0;i<nSpatial;i++)
-		position_next(i) = (velocity(i) * dtau) * inv_divs[i] + position(i);
+		position_next(i) = __fmad(velocity(i), dtau*inv_divs[i] , position(i));
 
 
 	position_half = (position_next + position) * realkind(0.5);
@@ -310,7 +292,7 @@ void ParticleObjNT<N,nSpatial,nVel,iEM>::PicardIterate(PlasmaData* pdata, FieldD
 
 
 	for(int i=0;i<nVel;i++)
-		velocity_next(i) = accel(i) * dtau + velocity(i);
+		velocity_next(i) = __fmad(accel(i), dtau, velocity(i));
 
 	residual = 0.0;
 
@@ -331,20 +313,28 @@ void ParticleObjNT<N,nSpatial,nVel,iEM>::PicardIterate(PlasmaData* pdata, FieldD
 //			for(int i=0;i<nVel;i++)printf("vhalf[%i]: %e = (%e + %e) * 0.5\n",i,
 //					velocity_half(i)(0),velocity_next(i)(0),velocity(i)(0));
 
-		position_last = position_next;
+//		position_last = position_next;
 
 
-		// Get the delta tau till a cell crossing
-		for(int i=0;i<nSpatial;i++)
-			dtau = time_till_crossing(velocity_half(i),position(i),dtau0,inv_divs[i]);
-
+//		dtau_last = dtau;
 
 		// Dampen solution if it gets stuck
 		if(iter%8 == 7)
-			dtau0 = dtau * 0.5;
+			for(int i=0;i<N;i++)
+				dtau0(i) = (residual(i) >= avg_resid) ? 0.25*dtau(i):dtau(i);
+
+		// Get the delta tau till a cell crossing
+//		for(int i=0;i<nSpatial;i++)
+//			dtau = time_till_crossing(velocity_half(i),position(i),
+//									dtau0,inv_divs[i]);
 
 		for(int i=0;i<nSpatial;i++)
-			position_next(i) = ((velocity_half(i) * inv_divs[i]) * dtau)  + position(i);
+			dtau = time_till_crossing2(velocity_half(i),position(i),
+									dtau0,dtau,inv_divs[i]);
+
+
+		for(int i=0;i<nSpatial;i++)
+			position_next(i) = __fmad(velocity_half(i), dtau*inv_divs[i] , position(i));
 
 
 
@@ -352,15 +342,18 @@ void ParticleObjNT<N,nSpatial,nVel,iEM>::PicardIterate(PlasmaData* pdata, FieldD
 
 
 		accel = get_accel(fields,position_half,velocity_half);
-		//accel = get_accel2(fields,position_half,dtau);
+//		accel = get_accel2(fields,position_half,dtau);
 
 
 //		residual = abs((velocity_next(0) - velocity(0))/dtau - accel(0));
+//
+//		for(int i=1;i<nVel;i++)
+//		residual += abs((velocity_next(i) - velocity(i))/dtau - accel(i));
 
-		velocity_last = velocity_next;
+//		velocity_last = velocity_next;
 
 		for(int i=0;i<nVel;i++)
-			velocity_next(i) = (accel(i) * dtau) + velocity(i);
+			velocity_next(i) = __fmad(accel(i), dtau, velocity(i));
 
 		// Residual Calculation
 
@@ -395,19 +388,26 @@ void ParticleObjNT<N,nSpatial,nVel,iEM>::PicardIterate(PlasmaData* pdata, FieldD
 //					(abs(position_next(0)) + abs(position_last(0))
 //					+ abs(position_next(1)) + abs(position_last(1))
 //					+ abs(position_next(2)) + abs(position_last(2)));
-
+//
+		residual = abs(((position_next(0) - position(0)))/(dtau)
+				- (velocity_next(0) + velocity(0))*(0.5*inv_divs[0]));
 
 		avg_resid = 0;
-
-		residual = abs(((position_next(0) - position(0)))/(dtau*inv_divs[0])
-				- (velocity_next(0) + velocity(0))*0.5);
+		for(int i=1;i<nSpatial;i++)
+		residual += abs(((position_next(i) - position(i)))/(dtau)
+				- (velocity_next(i) + velocity(i))*(0.5*inv_divs[i]));
 
 		for(int i=0;i<N;i++)
 		{
-			avg_resid += (residual(i))*(!ifinished(i));
+			residual(i) = !ifinished(i) ? residual(i):0.0;
 		}
 
-		avg_resid /= (realkind)N;
+		for(int i=0;i<N;i++)
+		{
+			avg_resid += residual(i);
+		}
+
+		avg_resid /= (realkind)(nSpatial)*N;
 
 //		printf("avg_resid = %e at %i\n",avg_resid,iter);
 
@@ -429,7 +429,8 @@ void ParticleObjNT<N,nSpatial,nVel,iEM>::PicardIterate(PlasmaData* pdata, FieldD
 	velocity_half = (velocity_next + velocity) * realkind(0.5);
 
 	for(int i=0;i<nSpatial;i++)
-		position_next(i) = ((velocity_half(i) * inv_divs[i]) * dtau)  + position(i);
+		position_next(i) = __fmad(velocity_half(i), dtau*inv_divs[i] , position(i));
+
 
 	position_half = (position_next + position) * realkind(0.5);
 //#ifndef GPU_CODE
@@ -438,14 +439,6 @@ void ParticleObjNT<N,nSpatial,nVel,iEM>::PicardIterate(PlasmaData* pdata, FieldD
 
 	// Check Boundary Conditions and update positions / velocities
 	typevecN<int,N> ishift;
-	typevecN<int,nSpatial> dims;
-
-	if(nSpatial > 0)
-		dims(0) = pdata->nx;
-	if(nSpatial > 1)
-		dims(1) = pdata->ny;
-	if(nSpatial > 2)
-		dims(2) = pdata->nz;
 
 	for(int i=0;i<nSpatial;i++)
 	{
@@ -454,7 +447,9 @@ void ParticleObjNT<N,nSpatial,nVel,iEM>::PicardIterate(PlasmaData* pdata, FieldD
 		ishift = ifloor((position_next(i)));
 		position(i) = position_next(i) - ishift;
 		iposition(i) += ishift;
-		iposition(i) = imod(imod(iposition(i),dims(i))+dims(i),dims(i));
+
+		// This modulo has been moved to outside the subcycle loop
+		//iposition(i) = imod(imod(iposition(i),dims(i))+dims(i),dims(i));
 
 //		for(int j=0;j<N;j++)
 //		{
@@ -591,12 +586,12 @@ typevecN<realkind,N> ParticleObjNT<N,nSpatial,nVel,iEM>::estimate_dtau(PlasmaDat
 
 
 
-	typevecN<realkind,N> d = 1.0/sqrt(alpha);
+	typevecN<realkind,N> d = 1.0/sqrtv(alpha);
 
 
 //	dtau = vmin(dtau,(pdata->dt - dt_finished));
 
-	dtau = vmin(dtau,max(sqrt(gamma2)*d,beta*d*d));
+	dtau = vmin(dtau,max(sqrtv(gamma2)*d,beta*d*d));
 
 	dtau = vmin(dtau,abs((pdata->dxdi)/velocity(0)));
 
@@ -617,14 +612,15 @@ typevecN<realkind,N> ParticleObjNT<N,nSpatial,nVel,iEM>::estimate_dtau(PlasmaDat
 			Bfield(0)(i)= fields->getB(iposition(0)(i),iposition(1)(i),0,0);
 			Bfield(1)(i)= fields->getB(iposition(0)(i),iposition(1)(i),0,1);
 			Bfield(2)(i)= fields->getB(iposition(0)(i),iposition(1)(i),0,2);
+
 		}
-		typevecN<realkind,N> B_mag = sqrt(Bfield(0)*Bfield(0) + Bfield(1)*Bfield(1) + Bfield(2)*Bfield(2));
-		typevecN<realkind,N> omega_c = abs(B_mag * pdata->qspecies[species]/pdata->mspecies[species]);
+		typevecN<realkind,N> B_mag = sqrtv(Bfield(0)*Bfield(0) + Bfield(1)*Bfield(1) + Bfield(2)*Bfield(2));
+		typevecN<realkind,N> omega_c = abs(B_mag*fields->q2m[species]);
 
-		dtau = vmin(dtau,0.1f/omega_c);
+		dtau = vmin(dtau,0.0625/omega_c);
 
-		dtau = vmin(dtau,abs((pdata->dxdi)/velocity(0)));
-		dtau = vmin(dtau,abs((pdata->dydi)/velocity(1)));
+		dtau = vmin(dtau,abs((0.5*pdata->dxdi)/velocity(0)));
+		dtau = vmin(dtau,abs((0.5*pdata->dydi)/velocity(1)));
 	}
 
 //	for(int i=0;i<N;i++)
@@ -644,22 +640,21 @@ typevecN<realkind,N> ParticleObjNT<N,nSpatial,nVel,iEM>::time_till_crossing(type
 #ifndef GPU_CODE
 	crossing_timer->start();
 #endif
-	const realkind cell_min = -1.0e-6;
-	const realkind cell_max = 1.0+1.0e-6;
+	const realkind cell_min = -1.0e-5;
+	const realkind cell_max = 1.0+1.0e-5;
 	typevecN<realkind,N> dtau;
-	typevecN<typevecN<realkind,N>,2> dtau_new;
 	typevecN<realkind,N> cell_face;
 //	typevecN<realkind,N> radical;
 //	typevecN<realkind,N> sqrt_radical;
 
-	cell_face = sgn(vin_half) * (0.5+1.0e-6);
+	cell_face = sgn(vin_half) * (0.5+1.0e-5);
 
 	for(int i=0;i<N;i++)
 	{
 		cell_face(i) += 0.5;
 	}
 
-	dtau = (pin-cell_face)/(vin_half*(-1.0f*scale));
+	dtau = (pin-cell_face)/(vin_half*(-scale));
 
 	for(int i=0;i<N;i++)
 	{
@@ -715,6 +710,57 @@ typevecN<realkind,N> ParticleObjNT<N,nSpatial,nVel,iEM>::time_till_crossing(type
 	return dtau;
 
 }
+
+template<int N,const int nSpatial,const int nVel,const bool iEM> __attribute__((noinline)) __device__
+typevecN<realkind,N> ParticleObjNT<N,nSpatial,nVel,iEM>::time_till_crossing2(
+								typevecN<realkind,N>& vin_half,
+								typevecN<realkind,N>& pin,
+								typevecN<realkind,N>& dtau0,typevecN<realkind,N>& dtau_cur,
+								const realkind scale)
+{
+#ifndef GPU_CODE
+	crossing_timer->start();
+#endif
+	const realkind cell_min = -1.0e-5;
+	const realkind cell_max = 1.0+1.0e-5;
+	typevecN<realkind,N> dtau;
+	typevecN<realkind,N> cell_face;
+	typevecN<realkind,N> face_error;
+
+//	cell_face = sgn(vin_half) * (0.5+1.0e-5);
+//
+//	for(int i=0;i<N;i++)
+//	{
+//		cell_face(i) += 0.5;
+//	}
+
+	cell_face = __fmad(sgn(vin_half),0.5+1.0e-5,0.5);
+
+	dtau = (pin-cell_face)/(vin_half*(-scale));
+
+	face_error = abs(__fmad(vin_half,dtau_cur*scale,pin) - cell_face);
+
+	for(int i=0;i<N;i++)
+	{
+
+		// Gaurd against negative and imaginary dtau's
+		dtau(i) = ((dtau(i) > 0.0)) ? dtau(i):dtau0(i);
+
+		// If the particle is already close enough with current time
+		// step then don't change it
+		dtau(i) = (face_error(i) <= 1.0e-5) ? dtau_cur(i):dtau(i);
+
+	}
+
+	dtau = vmin(dtau0,dtau);
+
+#ifndef GPU_CODE
+	crossing_timer->stop();
+#endif
+	return dtau;
+
+}
+
 
 template<int N,const int nSpatial,const int nVel,const bool iEM> __attribute__((noinline)) __device__
 void ParticleObjNT<N,nSpatial,nVel,iEM>::accumulate_current(PlasmaData* pdata, CurrentTally* currents,
@@ -806,19 +852,36 @@ bool ParticleObjNT<N,nSpatial,nVel,iEM>::check_exit(PlasmaData* pdata,const type
 
 	for(int i=0;i<N;i++)
 	{
-		if(dt_finished(i) >= pdata->dt*(1-1.0e-8))
+		if(!ifinished(i)){
+		if(dt_finished(i) >= pdata->dt*(1.0-RK_EPSILON))
 		{
-			dt_finished(i) = pdata->dt;
-			ifinished(i) = 1;
-			result += 1;
+			dt_finished(i) = pdata->dt*(1.0);
+//			ifinished(i) = 1;
+			//result += 1;
 		}
-		else if(iter(i) >= nSubcycl_max)
-		{
-			ifinished(i) = 1;
-			result += 1;
-			break;
+//		else if((iter(i) >= nSubcycl_max))
+//		{
+//			ifinished(i) = 1;
+//		//	result += 1;
+//		}
+
+		if(!ifinished(i)){
+		if(nSpatial == 1)
+			ifinished(i) = exit_checker->check_particle(dt_finished(i),iposition(0)(i),iter(i));
+		else if(nSpatial == 2)
+			ifinished(i) = exit_checker->check_particle(dt_finished(i),
+					iposition(0)(i),iposition(1)(i),iter(i));
+		else if(nSpatial == 3)
+			ifinished(i) = exit_checker->check_particle(dt_finished(i),
+					iposition(0)(i),iposition(1)(i),iposition(2)(i),iter(i));
+		}
+
+////		printf("ifinished = %i\n",ifinished(i));
 		}
 	}
+
+	for(int i=0;i<N;i++)
+		result += ifinished(i);
 
 	return result >= (N);
 }
@@ -916,10 +979,35 @@ typevecN<typevecN<realkind,N>,nVel> ParticleObjNT<N,nSpatial,nVel,iEM>::get_acce
 	x_out = x - ix_out;
 	ix_out += iposition;
 
+	if(N == 1)
+	{
+
+	typevecN<typevecN<realkind,N>,nVel> E;
+
+		E = get_E<FieldData_deriv_f>(fields,x_out,ix_out);
+
+		if(iEM)
+		{
+			if(nVel == 3)
+			{
+				//main formulation
+				typevecN<typevecN<realkind,N>,nVel> B;
+				B = get_B<FieldData_deriv_f>(fields,x_out,ix_out);
+				accel = cross_productNV(v(0),v(1),v(2),B);
+
+				for(int i=0;i<nVel;i++)
+					accel(i) = accel(i) + E(i);
 
 
+			}
+			else
+				accel = E;
+		}
+		else
+			accel = E;
 
-	if((nSpatial == 2)&&(nVel == 3))
+	}
+	else if((nSpatial == 2)&&(nVel == 3))
 	{
 		for(int i=0;i<N;i++)
 		{

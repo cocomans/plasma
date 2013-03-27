@@ -4,6 +4,7 @@
 #include "ChargeTally.h"
 #include "StressTally.h"
 #include "CurrentTallyGPU.cuh"
+#include "CurrentTallyCPU.h"
 #include "HOMoments.h"
 #include "PlasmaData.h"
 #include "ProblemInitializer.h"
@@ -12,34 +13,34 @@
 #include "omp.h"
 #include <thrust/count.h>
 
-__constant__ PlasmaData pdata_c;
+extern __constant__ PlasmaData pdata_c;
 
-const PlasmaData* pdata_c_address = &pdata_c;
-__host__ __device__
-ParticleListGPUSimple::ParticleListGPUSimple()
-{
 
-}
-__host__ __device__
-ParticleListGPUSimple::~ParticleListGPUSimple()
-{
-	/*
-	// Free realkind arrays
-	for(int i=0;i<ParticleList_nfloats;i++)
-	{
-		free(*get_float(i));
-	}
-
-	// Allocate int arrays
-	for(int i=0;i<ParticleList_nints;i++)
-	{
-		free(*get_int(i));
-	}
-
-	// allocate short ints for cluster id's
-	free(cluster_id);
-	*/
-}
+//__host__ __device__
+//ParticleListGPUSimple::ParticleListGPUSimple()
+//{
+//
+//}
+//__host__ __device__
+//ParticleListGPUSimple::~ParticleListGPUSimple()
+//{
+//	/*
+//	// Free realkind arrays
+//	for(int i=0;i<ParticleList_nfloats;i++)
+//	{
+//		free(*get_float(i));
+//	}
+//
+//	// Allocate int arrays
+//	for(int i=0;i<ParticleList_nints;i++)
+//	{
+//		free(*get_int(i));
+//	}
+//
+//	// allocate short ints for cluster id's
+//	free(cluster_id);
+//	*/
+//}
 
 void ParticleListGPUSimple::copy_from(const ParticleList* list_in)
 {
@@ -91,7 +92,7 @@ void ParticleListGPUSimple::allocate(PlasmaData* pdata,int nptcls_in)
 
 	nptcls = nptcls_in;
 
-	plot = gnuplot_init();
+//	plot = gnuplot_init();
 
 	// Allocate realkind arrays
 	for(int i=0;i<ParticleList_nfloats;i++)
@@ -120,7 +121,7 @@ void ParticleListGPUSimple::allocate(PlasmaData* pdata,int nptcls_in)
 
 	gridsize = min(gridsize,(nptcls+blocksize-1)/blocksize);
 
-	CUDA_SAFE_CALL(cudaMalloc((void**)&nsubcycles,gridsize*blocksize*sizeof(int)));
+	CUDA_SAFE_CALL(cudaMalloc((void**)&nsubcycles_thread,gridsize*blocksize*sizeof(int)));
 
 	CUDA_SAFE_CALL(cudaGetSymbolAddress((void**)&pdata_d,pdata_c));
 
@@ -135,9 +136,9 @@ void ParticleListGPUSimple::allocate(PlasmaData* pdata,int nptcls_in)
 void ParticleListGPUSimple::init(ProblemInitializer* initializer, HOMoments* moments)
 {
 
-	CurrentTally currents(moments->currentx,
-						  moments->currenty,
-						  moments->currentz,
+	CurrentTallyCPU currents(&moments->get_val(0,0,0,ispecies,HOMoments_currentx),
+						  &moments->get_val(0,0,0,ispecies,HOMoments_currenty),
+						  &moments->get_val(0,0,0,ispecies,HOMoments_currentz),
 						  make_int3(moments->pdata->nx,moments->pdata->ny,moments->pdata->nz),
 						  moments->pdata->dxdi,moments->pdata->dydi,moments->pdata->dzdi,
 						  moments->pdata->ndimensions);
@@ -150,7 +151,7 @@ void ParticleListGPUSimple::init(ProblemInitializer* initializer, HOMoments* mom
 	StressTally stress(&moments->get_val(0,0,0,ispecies,HOMoments_S2xx),
 						  make_int3(moments->pdata->nx,moments->pdata->ny,moments->pdata->nz),
 						  moments->pdata->dxdi,moments->pdata->dydi,moments->pdata->dzdi,
-						  moments->pdata->ndimensions);
+						  moments->pdata->ndimensions,moments->pdata->nVelocity);
 
 
 	moments -> set_vals(0);
@@ -424,7 +425,7 @@ long long int ParticleListGPUSimple::push(PlasmaData* pdata, FieldData* fields, 
 
 	// Push the particles
 //	printf("Pushing particles on the GPU\n");
-	result = push_interface(pdata,fields_d,moments_d);
+	result = push_interface3(pdata,fields_d,moments_d);
 //	printf("More Pushing particles on the GPU\n");
 	// Change the location of pdata in moments_d to host
 	moments_d->pdata = pdata;
@@ -455,7 +456,7 @@ void SimpleGPUPush(PlasmaData* 				pdata,
 
 	long long int num_subcycles_thread = 0;
 
-	__shared__ realkind currentx[256];
+	__shared__ float currentx[256];
 	__shared__ realkind charge_s[256];
 	__shared__ realkind S2xx_s[256];
 	while(tidx < 256)
@@ -477,22 +478,21 @@ void SimpleGPUPush(PlasmaData* 				pdata,
 	ParticleObjNT<1,nSpatial,nVel,iEM> particle(&pid);
 	typevecN<int,1> iter;
 
-	CurrentTally currents(currentx,
-						  &moments.get_val(0,0,0,particles.ispecies,HOMoments_currenty),
-						  &moments.get_val(0,0,0,particles.ispecies,HOMoments_currentz),
-						  make_int3(pdata->nx,pdata->ny,pdata->nz),
-						  pdata->dxdi,pdata->dydi,pdata->dzdi,
+	CurrentTallyGPU currents((float*)currentx, (float*)&moments.get_val(0,0,0,particles.ispecies,HOMoments_currenty),
+						  (float*)&moments.get_val(0,0,0,particles.ispecies,HOMoments_currentz),
+						  pdata->nx,pdata->ny,pdata->nz,
+						  0,0,0,
 						  pdata->ndimensions);
 
 	ChargeTally charge(charge_s,
 						  make_int3(currents.nx,currents.ny,currents.nz),
-						  currents.dx,currents.dy,currents.dz,
+						  pdata->dxdi,pdata->dydi,pdata->dzdi,
 						  1);
 
 	StressTally stress(S2xx_s,
 			  make_int3(currents.nx,currents.ny,currents.nz),
-			  currents.dx,currents.dy,currents.dz,
-			  1);
+			  pdata->dxdi,pdata->dydi,pdata->dzdi,
+			  1,1);
 
 	particle.species = particles2.ispecies;
 
@@ -500,7 +500,7 @@ void SimpleGPUPush(PlasmaData* 				pdata,
 	while(pid < particles.nptcls)
 	{
 		iter(0) = 0;
-
+		printf("reading in particle %i\n",pid);
 		particle.copy_in_gpu(particles2,0);
 		particle.dt_finished(0) = 0;
 		particle.push(pdata,fields3,&currents,iter,pdata->nSubcycle_max);
@@ -557,7 +557,7 @@ void SimpleGPUPushH(PlasmaData* 			pdata,
 }
 
 
-long long int ParticleListGPUSimple::push_interface(PlasmaData* pdata,
+long long int ParticleListGPUSimple::push_interface3(PlasmaData* pdata,
 		FieldDataGPU* fields,
 		HOMoments* moments)
 {
@@ -575,21 +575,21 @@ long long int ParticleListGPUSimple::push_interface(PlasmaData* pdata,
 		{
 		case 1:
 			if(!pdata->iEM)
-				SimpleGPUPushH<1,1,0>(pdata_d,fields,moments,this,nsubcycles);
+				SimpleGPUPushH<1,1,0>(pdata_d,fields,moments,this,nsubcycles_thread);
 			else
-				SimpleGPUPushH<1,1,1>(pdata,fields,moments,this,nsubcycles);
+				SimpleGPUPushH<1,1,1>(pdata,fields,moments,this,nsubcycles_thread);
 			break;
 		case 2:
 			if(pdata->iEM == 0)
-				SimpleGPUPushH<1,2,0>(pdata,fields,moments,this,nsubcycles);
+				SimpleGPUPushH<1,2,0>(pdata,fields,moments,this,nsubcycles_thread);
 			else
-				SimpleGPUPushH<1,2,1>(pdata,fields,moments,this,nsubcycles);
+				SimpleGPUPushH<1,2,1>(pdata,fields,moments,this,nsubcycles_thread);
 			break;
 		case 3:
 			if(pdata->iEM == 0)
-				SimpleGPUPushH<1,3,0>(pdata,fields,moments,this,nsubcycles);
+				SimpleGPUPushH<1,3,0>(pdata,fields,moments,this,nsubcycles_thread);
 			else
-				SimpleGPUPushH<1,3,1>(pdata,fields,moments,this,nsubcycles);
+				SimpleGPUPushH<1,3,1>(pdata,fields,moments,this,nsubcycles_thread);
 			break;
 		default:
 			break;
@@ -601,15 +601,15 @@ long long int ParticleListGPUSimple::push_interface(PlasmaData* pdata,
 		{
 		case 2:
 			if(pdata->iEM == 0)
-				SimpleGPUPushH<2,2,0>(pdata,fields,moments,this,nsubcycles);
+				SimpleGPUPushH<2,2,0>(pdata,fields,moments,this,nsubcycles_thread);
 			else
-				SimpleGPUPushH<2,2,1>(pdata,fields,moments,this,nsubcycles);
+				SimpleGPUPushH<2,2,1>(pdata,fields,moments,this,nsubcycles_thread);
 			break;
 		case 3:
 			if(pdata->iEM == 0)
-				SimpleGPUPushH<2,3,0>(pdata,fields,moments,this,nsubcycles);
+				SimpleGPUPushH<2,3,0>(pdata,fields,moments,this,nsubcycles_thread);
 			else
-				SimpleGPUPushH<2,3,1>(pdata,fields,moments,this,nsubcycles);
+				SimpleGPUPushH<2,3,1>(pdata,fields,moments,this,nsubcycles_thread);
 			break;
 		default:
 			break;
@@ -621,9 +621,9 @@ long long int ParticleListGPUSimple::push_interface(PlasmaData* pdata,
 		{
 		case 3:
 			if(pdata->iEM == 0)
-				SimpleGPUPushH<3,3,0>(pdata,fields,moments,this,nsubcycles);
+				SimpleGPUPushH<3,3,0>(pdata,fields,moments,this,nsubcycles_thread);
 			else
-				SimpleGPUPushH<3,3,1>(pdata,fields,moments,this,nsubcycles);
+				SimpleGPUPushH<3,3,1>(pdata,fields,moments,this,nsubcycles_thread);
 			break;
 		default:
 			break;
@@ -643,7 +643,7 @@ long long int ParticleListGPUSimple::push_interface(PlasmaData* pdata,
 	long long int result = 0;// = thrust::reduce(nsubcycles_t,nsubcycles_t+num_threads);
 
 	int* nsubcycles_temp = (int*)malloc(gridsize*blocksize*sizeof(int));
-	CUDA_SAFE_CALL(cudaMemcpy(nsubcycles_temp,nsubcycles,gridsize*blocksize*sizeof(int),cudaMemcpyDeviceToHost))
+	CUDA_SAFE_CALL(cudaMemcpy(nsubcycles_temp,nsubcycles_thread,gridsize*blocksize*sizeof(int),cudaMemcpyDeviceToHost))
 
 	for(int i=0;i<gridsize*blocksize;i++)
 		result += nsubcycles_temp[i];

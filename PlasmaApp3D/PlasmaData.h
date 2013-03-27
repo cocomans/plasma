@@ -9,6 +9,7 @@
 
 */
 /*--------------------------------------------------------------------------*/
+
 #ifndef PLASMA_DATA_H
 #define PLASMA_DATA_H
 
@@ -52,6 +53,7 @@ __device__
 void atomicAddD(double* address,double value);
 
 
+#define DOUBLE_PRECISION
 
 
 
@@ -219,6 +221,14 @@ public:
 	int my_nptcls;
 	int gpu_multiplier; // How many more particles to run on GPU than CPU
 	int my_species;
+
+	/// Dimension of sorting cluster (GPU)
+	int ClusterSortDim;
+	/// Dimension of Storage Cluster (GPU)
+	int ClusterStorDim;
+	/// Number of thread blocks per cluster
+	int TBpCluster;
+
 
 	int nptcls_species[NSPECIES_MAX];
 

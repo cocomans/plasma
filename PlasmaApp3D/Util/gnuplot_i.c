@@ -28,6 +28,7 @@
  ---------------------------------------------------------------------------*/
 
 #include "gnuplot_i.h"
+#include <math.h>
 
 /*---------------------------------------------------------------------------
                                 Defines
@@ -165,6 +166,8 @@ gnuplot_ctrl * gnuplot_init(void)
     handle->nobj = 0;
 
     handle->gnucmd = popen("gnuplot", "w") ;
+
+
 
     if (handle->gnucmd == NULL) {
         fprintf(stderr, "error starting gnuplot\n") ;
@@ -840,6 +843,11 @@ void gnuplot_plot_xyz(
     char    cmd[GP_CMD_SIZE] ;
     char    line[GP_CMD_SIZE] ;
 
+    int max_points = 101;
+
+    int nx_inc = (nx+max_points-1)/max_points;
+    int ny_inc = (ny+max_points-1)/max_points;
+
 	if (handle==NULL || x==NULL || y==NULL || (nx<1) || (ny<1)) return ;
 
     /* Open one more temporary file? */
@@ -861,10 +869,107 @@ void gnuplot_plot_xyz(
     handle->ntmp ++ ;
 
     /* Write data to this file  */
-    for (i=0 ; i<ny; i+=1) {
-    	for(int j=0;j<nx;j+=1)
+    for (i=0 ; i<=ny+ny_inc; i+=ny_inc) {
+    	for(int j=0;j<=nx+nx_inc;j+=nx_inc)
     	{
-    		sprintf(line, "%g %g %g\n", x[j], y[i], z[j+nx*i]) ;
+    		int it = fmin(i,ny-1);
+    		int jt = fmin(j,nx-1);
+    		sprintf(line, "%g %g %g\n", x[jt], y[it], z[jt+nx*it]) ;
+			write(tmpfd, line, strlen(line));
+    	}
+		sprintf(line, "\n") ;
+		write(tmpfd, line, strlen(line));
+    }
+    close(tmpfd) ;
+
+    /* Command to be sent to gnuplot    */
+    if (handle->nplots > 0) {
+        strcpy(cmd, "replot") ;
+    } else {
+    	gnuplot_cmd(handle,"set iso 10");
+    	gnuplot_cmd(handle,"set samp 10");
+    	gnuplot_cmd(handle,"set ztics 1");
+    	gnuplot_cmd(handle,"unset key");
+		gnuplot_cmd(handle,"set contour");
+		gnuplot_cmd(handle,"set cntrparam levels 8");
+		gnuplot_cmd(handle,"set hidd");
+		//strcpy(cmd, "dgrid3d") ;
+        strcpy(cmd, "splot") ;
+    }
+
+    if (title == NULL) {
+        sprintf(line, "%s \"%s\" with pm3d", cmd, name) ;
+    } else {
+        sprintf(line, "%s \"%s\" title \"%s\" with pm3d", cmd, name,
+                      title) ;
+    }
+
+    /* send command to gnuplot  */
+    gnuplot_cmd(handle, line) ;
+    handle->nplots++ ;
+    return ;
+}
+
+void gnuplot_plot_vector(
+    gnuplot_ctrl    *   handle,
+	float			*	x,
+	float			*	y,
+	float			* 	z,
+	float			*	dx,
+	float			*	dy,
+    int                 nx,
+    int                 ny,
+    char            *   title
+)
+{
+    int     i ;
+	int		tmpfd ;
+    char    name[128] ;
+    char    cmd[GP_CMD_SIZE] ;
+    char    line[GP_CMD_SIZE] ;
+
+    int max_vecs = 20;
+
+    int nx_inc = (nx+max_vecs-1)/max_vecs;
+    int ny_inc = (ny+max_vecs-1)/max_vecs;
+    float scale = sqrt(nx_inc*ny_inc);
+
+	if (handle==NULL || x==NULL || y==NULL || (nx<1) || (ny<1)) return ;
+
+    /* Open one more temporary file? */
+    if (handle->ntmp == GP_MAX_TMP_FILES - 1) {
+        fprintf(stderr,
+                "maximum # of temporary files reached (%d): cannot open more",
+                GP_MAX_TMP_FILES) ;
+        return ;
+    }
+
+    /* Open temporary file for output   */
+	sprintf(name, "%s/gnuplot-i-XXXXXX", P_tmpdir);
+    if ((tmpfd=mkstemp(name))==-1) {
+        fprintf(stderr,"cannot create temporary file: exiting plot") ;
+        return ;
+    }
+    /* Store file name in array for future deletion */
+    strcpy(handle->to_delete[handle->ntmp], name) ;
+    handle->ntmp ++ ;
+
+    /* Write data to this file  */
+    for (i=0 ; i<ny-ny_inc; i+=ny_inc) {
+    	for(int j=0;j<nx-nx_inc;j+=nx_inc)
+    	{
+    		int ip,jp;
+    		ip = fmin(i+ny_inc,ny-1);
+    		jp = fmin(j+nx_inc,nx-1);
+    		float xt,yt,zt;
+    		float dxt,dyt,dzt;
+    		xt = (x[j]+x[jp])/2.0;
+    		yt = (y[i]+y[ip])/2.0;
+    		zt = (z[j+nx*i]+z[jp+nx*ip])/2.0;
+    		dxt = (dx[j+nx*i]+dx[jp+nx*ip])/2.0;
+    		dyt = (dy[j+nx*i]+dy[jp+nx*ip])/2.0;
+    		dzt = 0;
+    		sprintf(line, "%g %g %g %g %g %g\n", xt, yt, zt, dxt*scale,dyt*scale,dzt*scale);
 			write(tmpfd, line, strlen(line));
     	}
 		sprintf(line, "\n") ;
@@ -883,7 +988,7 @@ void gnuplot_plot_xyz(
     if (title == NULL) {
         sprintf(line, "%s \"%s\" with pm3d", cmd, name) ;
     } else {
-        sprintf(line, "%s \"%s\" title \"%s\" with pm3d", cmd, name,
+        sprintf(line, "%s \"%s\" title \"%s\" w vec size  10, 15 filled", cmd, name,
                       title) ;
     }
 
@@ -892,6 +997,98 @@ void gnuplot_plot_xyz(
     handle->nplots++ ;
     return ;
 }
+
+void gnuplot_plot_vector3D(
+    gnuplot_ctrl    *   handle,
+	float			*	x,
+	float			*	y,
+	float			* 	z,
+	float			*	dx,
+	float			*	dy,
+	float			*	dz,
+    int                 nx,
+    int                 ny,
+    char            *   title
+)
+{
+    int     i ;
+	int		tmpfd ;
+    char    name[128] ;
+    char    cmd[GP_CMD_SIZE] ;
+    char    line[GP_CMD_SIZE] ;
+
+    int max_vecs = 20;
+
+    int nx_inc = (nx+max_vecs-1)/max_vecs;
+    int ny_inc = (ny+max_vecs-1)/max_vecs;
+
+    float scale = sqrt(nx_inc*ny_inc);
+
+
+	if (handle==NULL || x==NULL || y==NULL || (nx<1) || (ny<1)) return ;
+
+    /* Open one more temporary file? */
+    if (handle->ntmp == GP_MAX_TMP_FILES - 1) {
+        fprintf(stderr,
+                "maximum # of temporary files reached (%d): cannot open more",
+                GP_MAX_TMP_FILES) ;
+        return ;
+    }
+
+    /* Open temporary file for output   */
+	sprintf(name, "%s/gnuplot-i-XXXXXX", P_tmpdir);
+    if ((tmpfd=mkstemp(name))==-1) {
+        fprintf(stderr,"cannot create temporary file: exiting plot") ;
+        return ;
+    }
+    /* Store file name in array for future deletion */
+    strcpy(handle->to_delete[handle->ntmp], name) ;
+    handle->ntmp ++ ;
+
+    /* Write data to this file  */
+    for (i=0 ; i<ny-ny_inc; i+=ny_inc) {
+    	for(int j=0;j<nx-nx_inc;j+=nx_inc)
+    	{
+    		int ip,jp;
+    		ip = fmin(i+ny_inc,ny-1);
+    		jp = fmin(j+nx_inc,nx-1);
+    		float xt,yt,zt;
+    		float dxt,dyt,dzt;
+    		xt = (x[j]+x[jp])/2.0;
+    		yt = (y[i]+y[ip])/2.0;
+    		zt = (z[j+nx*i]+z[jp+nx*ip])/2.0;
+    		dxt = (dx[j+nx*i]+dx[jp+nx*ip])/2.0;
+    		dyt = (dy[j+nx*i]+dy[jp+nx*ip])/2.0;
+    		dzt = (dz[j+nx*i]+dz[jp+nx*ip])/2.0;
+    		sprintf(line, "%g %g %g %g %g %g\n", xt, yt, zt, dxt*scale,dyt*scale,dzt*scale);
+			write(tmpfd, line, strlen(line));
+    	}
+		sprintf(line, "\n") ;
+		write(tmpfd, line, strlen(line));
+    }
+    close(tmpfd) ;
+
+    /* Command to be sent to gnuplot    */
+    if (handle->nplots > 0) {
+        strcpy(cmd, "replot") ;
+    } else {
+    	//strcpy(cmd, "dgrid3d") ;
+        strcpy(cmd, "splot") ;
+    }
+
+    if (title == NULL) {
+        sprintf(line, "%s \"%s\" with pm3d", cmd, name) ;
+    } else {
+        sprintf(line, "%s \"%s\" title \"%s\" w vec size  10, 15 filled", cmd, name,
+                      title) ;
+    }
+
+    /* send command to gnuplot  */
+    gnuplot_cmd(handle, line) ;
+    handle->nplots++ ;
+    return ;
+}
+
 
 
 void gnuplot_plot_rbgaimage(

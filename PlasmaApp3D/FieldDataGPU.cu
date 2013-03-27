@@ -52,6 +52,8 @@ void FieldDataGPU::allocate(int nx_in, int ny_in, int nz_in, int nspecies_in)
 	CUDA_SAFE_CALL(cudaMalloc((void**)&By,alloc_size*sizeof(realkind)));
 	CUDA_SAFE_CALL(cudaMalloc((void**)&Bz,alloc_size*sizeof(realkind)));
 
+	CUDA_SAFE_CALL(cudaMalloc((void**)&data,alloc_size*sizeof(FieldValues)));
+
 	CUDA_SAFE_CALL(cudaMalloc((void**)&q2m,nspecies*sizeof(realkind)));
 
 }
@@ -158,7 +160,7 @@ realkind& FieldDataGPU::getETz(int ix, int iy, int iz)
 	iy = (((iy&(ny-1)) + ny)&(ny-1));
 	iz = (((iz&(nz-1)) + nz)&(nz-1));
 
-	int iout = zorder(ix,iy,iz);
+	int iout = ix + (nx)*(iy + ny * 0);
 
 	if(icomponent == 0)
 	{
@@ -186,7 +188,7 @@ realkind& FieldDataGPU::getBTz(int ix, int iy, int iz)
 	iy = (((iy&(ny-1)) + ny)&(ny-1));
 	iz = (((iz&(nz-1)) + nz)&(nz-1));
 
-	int iout = zorder(ix,iy,iz);
+	int iout = ix + (nx)*(iy + ny * 0);
 
 	if(icomponent == 0)
 	{
@@ -264,7 +266,7 @@ realkind FieldDataGPU::intrpET(realkind x, realkind y, realkind z, int icellx, i
 			{
 				realkind xp, yp, zp;
 
-				realkind Etemp = getET<0>(icellx+i,icelly,icellz);
+				realkind Etemp = getE(icellx+i,icelly,icellz,0);
 
 				xp = i-x;
 
@@ -303,6 +305,122 @@ realkind FieldDataGPU::intrpET(realkind x, realkind y, realkind z, int icellx, i
 			break;
 		}
 	} /* if(ndimensions == 1) */
+	else if(ndimensions == 2)
+	{
+		switch(icomponent)
+		{
+		case 0:
+			// x component
+			for(int j=-1;j<2;j++)
+			{
+				for(int i=0;i<2;i++)
+				{
+					realkind xp, yp, zp;
+
+					realkind Etemp = getE(icellx+i,icelly+j,icellz,0);
+
+					xp = i - x;
+					yp = j + 0.5 - y;
+
+
+					//printf("xp = %f, %f, %f\n",S1_shape(xp,dx),S2_shape(yp,dy),S2_shape(zp,dz));
+
+					if(ideriv == FieldData_deriv_f)
+					{
+						result += Etemp*S1_shape(xp) * S2_shape(yp);
+					}
+					else if(ideriv == FieldData_deriv_dfdx)
+					{
+						result += Etemp*dS1_shape(xp) * S2_shape(yp) / dx;
+					}
+					else if(ideriv == FieldData_deriv_dfdy)
+					{
+						result += Etemp*S1_shape(xp) * dS2_shape(yp) / dy;
+					}
+					else if(ideriv == FieldData_deriv_dfdz)
+					{
+						result += Etemp*S1_shape(xp) * S2_shape(yp) / dz;
+					}
+
+				}
+			}
+
+
+
+
+			break;
+		case 1:
+			// y component
+			for(int j=0;j<2;j++)
+			{
+				for(int i=-1;i<2;i++)
+				{
+					realkind xp, yp, zp;
+
+					realkind Etemp = getE(icellx+i,icelly+j,icellz,1);
+
+					xp = i + 0.5 - x;
+					yp = j - y;
+
+					if(ideriv == FieldData_deriv_f)
+					{
+						result += Etemp*S2_shape(xp) * S1_shape(yp);
+					}
+					else if(ideriv == FieldData_deriv_dfdx)
+					{
+						result += Etemp*dS2_shape(xp) * S1_shape(yp) / dx;
+					}
+					else if(ideriv == FieldData_deriv_dfdy)
+					{
+						result += Etemp*S2_shape(xp) * dS1_shape(yp) / dy;
+					}
+					else if(ideriv == FieldData_deriv_dfdz)
+					{
+						result += Etemp*S2_shape(xp) * S1_shape(yp) / dz;
+					}
+
+				}
+			}
+
+			break;
+		case 2:
+
+			// z component
+			for(int j=-1;j<2;j++)
+			{
+				for(int i=-1;i<2;i++)
+				{
+					realkind xp, yp, zp;
+
+					realkind Etemp = getE(icellx+i,icelly+j,icellz,2);
+
+					xp = i + 0.5 - x;
+					yp = j + 0.5 - y;
+
+					if(ideriv == FieldData_deriv_f)
+					{
+						result += Etemp*S2_shape(xp) * S2_shape(yp);
+					}
+					else if(ideriv == FieldData_deriv_dfdx)
+					{
+						result += Etemp*dS2_shape(xp) * S2_shape(yp) / dx;
+					}
+					else if(ideriv == FieldData_deriv_dfdy)
+					{
+						result += Etemp*S2_shape(xp) * dS2_shape(yp) / dy;
+					}
+					else if(ideriv == FieldData_deriv_dfdz)
+					{
+						result += Etemp*S2_shape(xp) * S2_shape(yp) / dz;
+					}
+				}
+			}
+
+			break;
+		default:
+			break;
+		}
+	} /* if(ndimensions == 1) */
 	else
 	{
 		switch(icomponent)
@@ -317,7 +435,7 @@ realkind FieldDataGPU::intrpET(realkind x, realkind y, realkind z, int icellx, i
 					{
 						realkind xp, yp, zp;
 
-						realkind Etemp = getETz<0>(icellx+i,icelly+j,icellz+k);
+						realkind Etemp = getET<0>(icellx+i,icelly+j,icellz+k);
 
 						xp = i - x;
 						yp = j + 0.5 - y;
@@ -360,7 +478,7 @@ realkind FieldDataGPU::intrpET(realkind x, realkind y, realkind z, int icellx, i
 					{
 						realkind xp, yp, zp;
 
-						realkind Etemp = getETz<1>(icellx+i,icelly+j,icellz+k);
+						realkind Etemp = getET<1>(icellx+i,icelly+j,icellz+k);
 
 						xp = i + 0.5 - x;
 						yp = j - y;
@@ -398,7 +516,7 @@ realkind FieldDataGPU::intrpET(realkind x, realkind y, realkind z, int icellx, i
 					{
 						realkind xp, yp, zp;
 
-						realkind Etemp = getETz<2>(icellx+i,icelly+j,icellz+k);
+						realkind Etemp = getET<2>(icellx+i,icelly+j,icellz+k);
 
 						xp = i + 0.5 - x;
 						yp = j + 0.5 - y;
@@ -441,124 +559,382 @@ realkind FieldDataGPU::intrpBT(realkind x, realkind y, realkind z, int icellx, i
 
 	// Check Boundary Conditions
 
-	if(icomponent == 0)
+	if(ndimensions == 1)
 	{
-		// x component
-		for(int k=0;k<2;k++)
+		switch(icomponent)
 		{
+		case 0:
+			// x component
+
+			for(int i=0;i<2;i++)
+			{
+				realkind xp, yp, zp;
+
+				realkind Etemp = getB(icellx+i,icelly,icellz,0);
+
+				xp = i-x;
+
+				//printf("xp = %f, %f, %f\n",S1_shape(xp,dx),S2_shape(yp,dy),S2_shape(zp,dz));
+
+				if(ideriv == FieldData_deriv_f)
+				{
+					result += Etemp*S1_shape(xp);
+				}
+				else if(ideriv == FieldData_deriv_dfdx)
+				{
+					result += Etemp*dS1_shape(xp) / dx;
+				}
+				else if(ideriv == FieldData_deriv_dfdy)
+				{
+					result += 0;
+				}
+				else if(ideriv == FieldData_deriv_dfdz)
+				{
+					result += 0;
+				}
+
+			}
+
+			break;
+		case 1:
+			// y component
+			for(int i=0;i<2;i++)
+			{
+				realkind xp, yp, zp;
+
+				realkind Etemp = getB(icellx+i,icelly,icellz,1);
+
+				xp = i-x;
+
+				//printf("xp = %f, %f, %f\n",S1_shape(xp,dx),S2_shape(yp,dy),S2_shape(zp,dz));
+
+				if(ideriv == FieldData_deriv_f)
+				{
+					result += Etemp*S1_shape(xp);
+				}
+				else if(ideriv == FieldData_deriv_dfdx)
+				{
+					result += Etemp*dS1_shape(xp) / dx;
+				}
+				else if(ideriv == FieldData_deriv_dfdy)
+				{
+					result += 0;
+				}
+				else if(ideriv == FieldData_deriv_dfdz)
+				{
+					result += 0;
+				}
+
+			}
+			break;
+		case 2:
+
+			// z component
+			for(int i=0;i<2;i++)
+			{
+				realkind xp, yp, zp;
+
+				realkind Etemp = getB(icellx+i,icelly,icellz,2);
+
+				xp = i-x;
+
+				//printf("xp = %f, %f, %f\n",S1_shape(xp,dx),S2_shape(yp,dy),S2_shape(zp,dz));
+
+				if(ideriv == FieldData_deriv_f)
+				{
+					result += Etemp*S1_shape(xp);
+				}
+				else if(ideriv == FieldData_deriv_dfdx)
+				{
+					result += Etemp*dS1_shape(xp) / dx;
+				}
+				else if(ideriv == FieldData_deriv_dfdy)
+				{
+					result += 0;
+				}
+				else if(ideriv == FieldData_deriv_dfdz)
+				{
+					result += 0;
+				}
+
+			}
+			break;
+		default:
+			break;
+		}
+	} /* if(ndimensions == 1) */
+	else if(ndimensions == 2)
+	{
+
+		// Ndimensions == 2 always
+//		const realkind s11[4] = {S1_shape(x),S1_shape(1-x),S1_shape(y),S1_shape(1-y)};
+//		const realkind s12[4] = {s11[2],s11[3],s11[1],s11[0]};
+//
+//		const realkind Barr[4] ={getBT<icomponent>(icellx,icelly,icellz),
+//			getBT<icomponent>(icellx+1,icelly+1,icellz),
+//			getBT<icomponent>(icellx+1,icelly,icellz),
+//			getBT<icomponent>(icellx,icelly+1,icellz)};
+////			icache = 1;
+////		}
+//
+//
+//		__m256d s11v = _mm256_load_pd(s11);
+//		__m256d s12v = _mm256_load_pd(s12);
+//		__m256d Bv = _mm256_load_pd(Barr);
+//
+//		__m256d temp1 = _mm256_mul_pd(_mm256_mul_pd(s12v,s11v),Bv);
+//
+//		temp1 = _mm256_hadd_pd(temp1,temp1);
+//
+//
+//		__m128d hi128 = _mm256_extractf128_pd(temp1,1);
+//		__m128d dotproduct = _mm_add_pd(*(__m128d*)&temp1,hi128);
+//
+//		result = *(double*)&dotproduct;
+		switch(icomponent)
+		{
+		case 0:
+			// x component
 			for(int j=0;j<2;j++)
 			{
 				for(int i=0;i<2;i++)
 				{
 					realkind xp, yp, zp;
 
-					realkind Btemp = getBTz<0>(icellx+i,icelly+j,icellz+k);
+					realkind Etemp = getB(icellx+i,icelly+j,icellz,0);
 
 					xp = i - x;
 					yp = j - y;
-					zp = k - z;
+
+
+					//printf("xp = %f, %f, %f\n",S1_shape(xp,dx),S2_shape(yp,dy),S2_shape(zp,dz));
 
 					if(ideriv == FieldData_deriv_f)
 					{
-						result += Btemp*S1_shape(xp) * S1_shape(yp) * S1_shape(zp);
+						result += Etemp*S1_shape(xp) * S1_shape(yp);
 					}
 					else if(ideriv == FieldData_deriv_dfdx)
 					{
-						result += Btemp*dS1_shape(xp) * S1_shape(yp) * S1_shape(zp) / dx;
+						result += Etemp*dS1_shape(xp) * S1_shape(yp) / dx;
 					}
 					else if(ideriv == FieldData_deriv_dfdy)
 					{
-						result += Btemp*S1_shape(xp) * dS1_shape(yp) * S1_shape(zp) / dy;
+						result += Etemp*S1_shape(xp) * dS1_shape(yp) / dy;
 					}
 					else if(ideriv == FieldData_deriv_dfdz)
 					{
-						result += Btemp*S1_shape(xp) * S1_shape(yp) * dS1_shape(zp) / dz;
+						result += Etemp*S1_shape(xp) * S1_shape(yp) / dz;
 					}
 
 				}
 			}
-		}
-	}
-	else if(icomponent == 1)
-	{
-		// y component
-		for(int k=0;k<2;k++)
-		{
+
+
+
+
+			break;
+		case 1:
+			// y component
 			for(int j=0;j<2;j++)
 			{
 				for(int i=0;i<2;i++)
 				{
 					realkind xp, yp, zp;
 
-					realkind Btemp = getBTz<1>(icellx+i,icelly+j,icellz+k);
+					realkind Etemp = getB(icellx+i,icelly+j,icellz,1);
 
 					xp = i - x;
 					yp = j - y;
-					zp = k - z;
 
 					if(ideriv == FieldData_deriv_f)
 					{
-						result += Btemp*S1_shape(xp) * S1_shape(yp) * S1_shape(zp);
+						result += Etemp*S1_shape(xp) * S1_shape(yp);
 					}
 					else if(ideriv == FieldData_deriv_dfdx)
 					{
-						result += Btemp*dS1_shape(xp) * S1_shape(yp) * S1_shape(zp) / dx;
+						result += Etemp*dS1_shape(xp) * S1_shape(yp) / dx;
 					}
 					else if(ideriv == FieldData_deriv_dfdy)
 					{
-						result += Btemp*S1_shape(xp) * dS1_shape(yp) * S1_shape(zp) / dy;
+						result += Etemp*S1_shape(xp) * dS1_shape(yp) / dy;
 					}
 					else if(ideriv == FieldData_deriv_dfdz)
 					{
-						result += Btemp*S1_shape(xp) * S1_shape(yp) * dS1_shape(zp) / dz;
+						result += Etemp*S1_shape(xp) * S1_shape(yp) / dz;
 					}
 
 				}
 			}
-		}
-	}
-	else if(icomponent == 2)
-	{
-		// z component
-		for(int k=0;k<2;k++)
-		{
+
+			break;
+		case 2:
+
+			// z component
 			for(int j=0;j<2;j++)
 			{
 				for(int i=0;i<2;i++)
 				{
 					realkind xp, yp, zp;
 
-					realkind Btemp = getBTz<2>(icellx+i,icelly+j,icellz+k);
+					realkind Etemp = getB(icellx+i,icelly+j,icellz,2);
 
 					xp = i - x;
 					yp = j - y;
-					zp = k - z;
 
 					if(ideriv == FieldData_deriv_f)
 					{
-						result += Btemp*S1_shape(xp) * S1_shape(yp) * S1_shape(zp);
+						result += Etemp*S1_shape(xp) * S1_shape(yp);
 					}
 					else if(ideriv == FieldData_deriv_dfdx)
 					{
-						result += Btemp*dS1_shape(xp) * S1_shape(yp) * S1_shape(zp) / dx;
+						result += Etemp*dS1_shape(xp) * S1_shape(yp) / dx;
 					}
 					else if(ideriv == FieldData_deriv_dfdy)
 					{
-						result += Btemp*S1_shape(xp) * dS1_shape(yp) * S1_shape(zp) / dy;
+						result += Etemp*S1_shape(xp) * dS1_shape(yp) / dy;
 					}
 					else if(ideriv == FieldData_deriv_dfdz)
 					{
-						result += Btemp*S1_shape(xp) * S1_shape(yp) * dS1_shape(zp) / dz;
+						result += Etemp*S1_shape(xp) * S1_shape(yp) / dz;
 					}
-
 				}
 			}
-		}
 
-	}
+			break;
+		default:
+			break;
+		}
+	} /* if(ndimensions == 1) */
+	else
+	{
+
+		switch(icomponent)
+		{
+		case 0:
+			// x component
+			for(int k=-1;k<2;k++)
+			{
+				for(int j=-1;j<2;j++)
+				{
+					for(int i=0;i<2;i++)
+					{
+						realkind xp, yp, zp;
+
+						realkind Etemp = getBT<0>(icellx+i,icelly+j,icellz+k);
+
+						xp = i - x;
+						yp = j  - y;
+						zp = k  - z;
+
+
+						//printf("xp = %f, %f, %f\n",S1_shape(xp,dx),S2_shape(yp,dy),S2_shape(zp,dz));
+
+						if(ideriv == FieldData_deriv_f)
+						{
+							result += Etemp*S1_shape(xp) * S2_shape(yp) * S2_shape(zp);
+						}
+						else if(ideriv == FieldData_deriv_dfdx)
+						{
+							result += Etemp*dS1_shape(xp) * S2_shape(yp) * S2_shape(zp) / dx;
+						}
+						else if(ideriv == FieldData_deriv_dfdy)
+						{
+							result += Etemp*S1_shape(xp) * dS2_shape(yp) * S2_shape(zp) / dy;
+						}
+						else if(ideriv == FieldData_deriv_dfdz)
+						{
+							result += Etemp*S1_shape(xp) * S2_shape(yp) * dS2_shape(zp) / dz;
+						}
+
+					}
+				}
+			}
+
+
+
+			break;
+		case 1:
+			// y component
+			for(int k=-1;k<2;k++)
+			{
+				for(int j=0;j<2;j++)
+				{
+					for(int i=-1;i<2;i++)
+					{
+						realkind xp, yp, zp;
+
+						realkind Etemp = getBT<1>(icellx+i,icelly+j,icellz+k);
+
+						xp = i + 0.5 - x;
+						yp = j - y;
+						zp = k + 0.5 - z;
+
+						if(ideriv == FieldData_deriv_f)
+						{
+							result += Etemp*S2_shape(xp) * S1_shape(yp) * S2_shape(zp);
+						}
+						else if(ideriv == FieldData_deriv_dfdx)
+						{
+							result += Etemp*dS2_shape(xp) * S1_shape(yp) * S2_shape(zp) / dx;
+						}
+						else if(ideriv == FieldData_deriv_dfdy)
+						{
+							result += Etemp*S2_shape(xp) * dS1_shape(yp) * S2_shape(zp) / dy;
+						}
+						else if(ideriv == FieldData_deriv_dfdz)
+						{
+							result += Etemp*S2_shape(xp) * S1_shape(yp) * dS2_shape(zp) / dz;
+						}
+
+					}
+				}
+			}
+			break;
+		case 2:
+
+			// z component
+			for(int k=0;k<2;k++)
+			{
+				for(int j=-1;j<2;j++)
+				{
+					for(int i=-1;i<2;i++)
+					{
+						realkind xp, yp, zp;
+
+						realkind Etemp = getBT<2>(icellx+i,icelly+j,icellz+k);
+
+						xp = i + 0.5 - x;
+						yp = j + 0.5 - y;
+						zp = k - z;
+
+						if(ideriv == FieldData_deriv_f)
+						{
+							result += Etemp*S2_shape(xp) * S2_shape(yp) * S1_shape(zp);
+						}
+						else if(ideriv == FieldData_deriv_dfdx)
+						{
+							result += Etemp*dS2_shape(xp) * S2_shape(yp) * S1_shape(zp) / dx;
+						}
+						else if(ideriv == FieldData_deriv_dfdy)
+						{
+							result += Etemp*S2_shape(xp) * dS2_shape(yp) * S1_shape(zp) / dy;
+						}
+						else if(ideriv == FieldData_deriv_dfdz)
+						{
+							result += Etemp*S2_shape(xp) * S2_shape(yp) * dS1_shape(zp) / dz;
+						}
+					}
+				}
+			}
+			break;
+		default:
+			break;
+		}
+	} /* if(ndimensions != 1) */
 
 	return result;
 }
+
 
 
 
@@ -746,15 +1122,88 @@ realkind FieldDataGPU::intrpB(realkind x, realkind y, realkind z,
 }
 
 
+__device__
+void FieldDataGPU::intrpAccel(realkind x, realkind y, realkind z,
+				realkind vx,realkind vy, realkind vz,
+				int icellx, int icelly, int icellz,
+/* Outputs */		realkind &accelx,realkind& accely, realkind& accelz)
+{
+	realkind accelout;
+
+	realkind Bxs,Bys,Bzs;
+	realkind Exs,Eys,Ezs;
+
+	Exs = intrpET<0,FieldData_deriv_f>(x,y,z,icellx,icelly,icellz);
+	Eys = intrpET<1,FieldData_deriv_f>(x,y,z,icellx,icelly,icellz);
+	Ezs = intrpET<2,FieldData_deriv_f>(x,y,z,icellx,icelly,icellz);
+
+	Bxs = intrpBT<0,FieldData_deriv_f>(x,y,z,icellx,icelly,icellz);
+	Bys = intrpBT<1,FieldData_deriv_f>(x,y,z,icellx,icelly,icellz);
+	Bzs = intrpBT<2,FieldData_deriv_f>(x,y,z,icellx,icelly,icellz);
+
+	accely = vz*Bxs - vx*Bzs + Eys;
+	accelz = vx*Bys - vy*Bxs + Ezs;
+	accelx = vy*Bzs - vz*Bys + Exs;
+
+
+
+}
+
+
+__global__
+void transpose_aos(realkind* Ex,realkind* Ey, realkind* Ez,
+				   realkind* Bx,realkind* By,realkind* Bz,
+				   FieldValues* data_in,int alloc_size)
+{
+	int tidx = threadIdx.x;
+	int gidx = tidx + blockIdx.x*blockDim.x;
+
+	FieldValues local_data;
+
+	while(gidx < alloc_size)
+	{
+		local_data = data_in[gidx];
+
+		Ex[gidx] = local_data.vals[0];
+		Ey[gidx] = local_data.vals[1];
+		Ez[gidx] = local_data.vals[2];
+
+		Bx[gidx] = local_data.vals[3];
+		By[gidx] = local_data.vals[4];
+		Bz[gidx] = local_data.vals[5];
+
+		gidx += blockDim.x*gridDim.x;
+	}
+}
+
 void FieldDataGPU::copy_from(FieldData* src)
 {
-	CUDA_SAFE_CALL(cudaMemcpy(Bx,src->Bx,alloc_size*sizeof(realkind),cudaMemcpyHostToDevice));
-	CUDA_SAFE_CALL(cudaMemcpy(By,src->By,alloc_size*sizeof(realkind),cudaMemcpyHostToDevice));
-	CUDA_SAFE_CALL(cudaMemcpy(Bz,src->Bz,alloc_size*sizeof(realkind),cudaMemcpyHostToDevice));
 
-	CUDA_SAFE_CALL(cudaMemcpy(Ex,src->Ex,alloc_size*sizeof(realkind),cudaMemcpyHostToDevice));
-	CUDA_SAFE_CALL(cudaMemcpy(Ey,src->Ey,alloc_size*sizeof(realkind),cudaMemcpyHostToDevice));
-	CUDA_SAFE_CALL(cudaMemcpy(Ez,src->Ez,alloc_size*sizeof(realkind),cudaMemcpyHostToDevice));
+	// If field data is stored as a struct of arrays
+	if(src->FieldType == FieldData_cpu)
+	{
+		CUDA_SAFE_CALL(cudaMemcpy(Bx,src->Bx,alloc_size*sizeof(realkind),cudaMemcpyHostToDevice));
+		CUDA_SAFE_CALL(cudaMemcpy(By,src->By,alloc_size*sizeof(realkind),cudaMemcpyHostToDevice));
+		CUDA_SAFE_CALL(cudaMemcpy(Bz,src->Bz,alloc_size*sizeof(realkind),cudaMemcpyHostToDevice));
+
+		CUDA_SAFE_CALL(cudaMemcpy(Ex,src->Ex,alloc_size*sizeof(realkind),cudaMemcpyHostToDevice));
+		CUDA_SAFE_CALL(cudaMemcpy(Ey,src->Ey,alloc_size*sizeof(realkind),cudaMemcpyHostToDevice));
+		CUDA_SAFE_CALL(cudaMemcpy(Ez,src->Ez,alloc_size*sizeof(realkind),cudaMemcpyHostToDevice));
+
+
+	}
+	else if(src->FieldType == FieldData_cpu_aos)
+	{
+		// Field is stored as an array of structs
+		CUDA_SAFE_CALL(cudaMemcpy(data,src->data,alloc_size*sizeof(FieldValues),cudaMemcpyHostToDevice));
+
+		int cudaBlockSize = 512;
+		int cudaGridSize = 96;
+		// Transpose it
+		CUDA_SAFE_KERNEL((transpose_aos<<<cudaBlockSize,cudaGridSize>>>(
+				Ex,Ey,Ez,Bx,By,Bz,data,alloc_size)))
+
+	}
 
 	CUDA_SAFE_CALL(cudaMemcpy(q2m,src->q2m,nspecies*sizeof(realkind),cudaMemcpyHostToDevice));
 }

@@ -27,6 +27,7 @@ class HOMoments;
 class ParticleObj;
 class ProblemInitializer;
 class CPUTimer;
+class PExitCheck;
 
 template<int N>
 class ParticleObjN;
@@ -60,8 +61,8 @@ public:
 		@brief Empty Constructor
 	*/
 	/*--------------------------------------------------------------------------*/
-	__host__ __device__
-	ParticleList(){}
+//	__host__ __device__
+//	ParticleList(){};
 	/*-------------------------------------------------------------------------*/
 	/**
 		@brief Destructor
@@ -323,6 +324,8 @@ public:
 	int* cluster_id;
 	/// buffer array used for sorting and various sums
 	realkind* buffer;
+	realkind* buffer64;
+	int* buffer32;
 
 
 	/// number of subcycles completed for each particle
@@ -332,6 +335,8 @@ public:
 	realkind* num_piccard;
 	/// squared number of piccard iterations
 	realkind* num_piccard2;
+
+
 
 	/// species of particles stored in this list
 	int ispecies;

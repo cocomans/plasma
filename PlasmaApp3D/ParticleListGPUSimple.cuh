@@ -16,9 +16,9 @@ class ParticleListGPUSimple : public ParticleListGPU
 {
 public:
 	__host__ __device__
-	ParticleListGPUSimple();
+	ParticleListGPUSimple(){};
 	__host__ __device__
-	~ParticleListGPUSimple();
+	~ParticleListGPUSimple(){};
 
 	void allocate(PlasmaData* pdata,int nptcls_in);
 
@@ -26,9 +26,19 @@ public:
 
 	realkind evaluate_energy(PlasmaData* pdata);
 
+	/*-------------------------------------------------------------------------*/
+	/**
+		@brief Tally \f$n_{i,j,k}^{t+1}\f$
+		@param[in] pdata Simulation information
+		@param[in] momments HO moments.
+
+	*/
+	/*--------------------------------------------------------------------------*/
+	void accumulate_charge(PlasmaData* pdata, HOMoments* moments){};
+
 	long long int push(PlasmaData* pdata, FieldData* fields, HOMoments* moments);
 
-	long long int push_interface(PlasmaData* pdata, FieldDataGPU* fields, HOMoments* moments);
+	long long int push_interface3(PlasmaData* pdata, FieldDataGPU* fields, HOMoments* moments);
 
 	double4 subcycle_stats(PlasmaData* pdata);
 

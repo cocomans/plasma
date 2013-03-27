@@ -61,6 +61,11 @@ class FieldDataCPU2D : public FieldDataCPU
 {
 public:
 
+	FieldDataCPU2D()
+	{
+		FieldType = FieldData_cpu_aos;
+	}
+
 
 	~FieldDataCPU2D()
 	{

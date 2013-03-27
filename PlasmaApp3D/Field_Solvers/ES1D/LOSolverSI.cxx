@@ -122,7 +122,7 @@ int LOSolverSI::siSolverElectron( 	HOMoments* curHOMoments, HOMoments* oldHOMome
 	double 		dx 		= pData->dxdi;
 	double 		dxRecip = 1.0/dx;
 	double 		eps0 	= epsilon_naught;
-	double 		tol_lo 	= 1.0e-6;
+	double 		tol_lo 	= 1.0e-10;
 	int 		loTrunc = 100;
 	double 		me 		= pData->mspecies[0];
 
@@ -324,7 +324,7 @@ int LOSolverSI::siSolverTwoSpecies( 	HOMoments* curHOMoments, HOMoments* oldHOMo
 	double 		dx 		= pData->dxdi;
 	double 		dxRecip = 1.0/dx;
 	double 		eps0 	= epsilon_naught;
-	double 		tol_lo 	= 1.0e-8;
+	double 		tol_lo 	= 1.0e-12;
 	int 		loTrunc = 500;
 	double 		me 		= pData->mspecies[0];
 	double 		mi 		= pData->mspecies[1];

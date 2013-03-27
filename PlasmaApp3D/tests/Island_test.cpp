@@ -50,9 +50,9 @@ int main(int argc,char* argv[])
 
 	pdata.nz = 2;
 
-	double B0 = sqrt(pdata.n0*pdata.Te*8.0*pi_const);
+	double B0 = 0.3;
 
-	double lambda = B0/sqrt(pdata.mspecies[0]/pdata.mspecies[1]);
+	double lambda = 1.0/sqrt(pdata.mspecies[0]/pdata.mspecies[1]);
 //	lambda = 64/(2*pi_const);
 	pdata.Lx = 4*pi_const*lambda;
 	pdata.Ly = 2*pi_const*lambda;

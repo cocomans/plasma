@@ -15,6 +15,7 @@
 #include "ParticleListCPUSorted.h"
 #include "ParticleListGPU.cuh"
 #include "ParticleListGPUSimple.cuh"
+#include "ParticleListMIC.h"
 #include "FieldDataCPU.h"
 #include "FieldDataCPU2D.h"
 #include "FieldDataGPU.cuh"
@@ -128,8 +129,8 @@ void ImplicitPIC::simulate()
 		switch(pdata->iParticleListCPU)
 		{
 		case 0:
-			particles_old[tid] = new ParticleListCPU();
-			particles_next[tid] = new ParticleListCPU();
+			particles_old[tid] = new ParticleListMIC();
+			particles_next[tid] = new ParticleListMIC();
 			break;
 		case 1:
 			particles_old[tid] = new ParticleListCPUSorted();
@@ -165,9 +166,9 @@ void ImplicitPIC::simulate()
 #ifndef NO_CUDA
 		myinfo->nthreads = 1;
 		// Device is a GPU
-		particles_old[tid] = new ParticleListGPUSimple();
-		particles_next[tid] = new ParticleListGPUSimple();
-		fields_half[tid+1] = new FieldDataCPU();
+		particles_old[tid] = new ParticleListGPU();
+		particles_next[tid] = new ParticleListGPU();
+		fields_half[tid+1] = new FieldDataCPU2D();
 		moments[tid+1] = new HOMoments(pdata);
 #endif
 
@@ -263,9 +264,9 @@ void ImplicitPIC::simulate()
 		fields_old -> init_plot();
 		fields_next -> init_plot();
 		charge_plot.init_plot();
-		moments[0] -> plot(pdata->nz/2,0,0,HOMoments_currentz);
+		moments[0] -> plot(pdata->nz/2,0,0,HOMoments_currentxyz);
 		charge_plot.plot(pdata->nz/2,0,0,HOMoments_charge);
-		fields_old -> plot(pdata,pdata->nz/2,0,1,0);
+		fields_old -> plot(pdata,pdata->nz/2,0,1,3);
 
 		//getchar();
 	}
@@ -457,7 +458,7 @@ void ImplicitPIC::simulate()
 			step_timer.stop();
 
 			// If residual is below tolerance, exit the loop
-			if( (residual <= 1.0e-8)||(picard_iter >= 40))
+			if( (residual <= 1.0e-9)||(picard_iter >= 40))
 				break;
 
 
@@ -478,9 +479,9 @@ void ImplicitPIC::simulate()
 			if(pdata->plot_flag)
 			{
 				fields_next -> reset_plot();
-				fields_next -> plot(pdata,0,0,0,0);
+				fields_next -> plot(pdata,0,0,1,3);
 				moments[0] -> reset_plot();
-				moments[0] -> plot(pdata->nz/2,0,0,HOMoments_currentz);
+				moments[0] -> plot(pdata->nz/2,0,0,HOMoments_currentxyz);
 
 				charge_plot.reset_plot();
 				charge_plot.plot(pdata->nz/2,0,0,HOMoments_charge);

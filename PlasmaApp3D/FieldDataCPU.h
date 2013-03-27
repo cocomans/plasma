@@ -58,6 +58,10 @@ class FieldDataCPU : public FieldData
 {
 public:
 
+	FieldDataCPU()
+	{
+		FieldType = FieldData_cpu;
+	}
 
 	~FieldDataCPU()
 	{

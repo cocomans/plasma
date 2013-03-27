@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include <math.h>
 
+#ifndef CUDA_CODE
+#include <immintrin.h>
+#endif
+
 #define SIGN_MASK 0x7fffffff
 union combo_hack{
 	        unsigned int in;
@@ -79,6 +83,29 @@ realkind S1_shape(realkind x)
 
 }
 
+//static const __m256i sign_mask = _mm256_set1_epi32(0x7fffffff);
+//
+//static const __m256 float_1 = _mm256_set1_ps(1.0);
+//
+//static const __m256 float_15 = _mm256_set1_ps(1.5);
+//
+//static const __m256 float_075 = _mm256_set1_ps(0.75);
+//
+//static const __m256 float_05 = _mm256_set1_ps(0.5);
+//
+//static __inline__
+//__m256 S1_shape(__m256 x)
+//{
+//	// abs
+//	x = _mm256_and_ps(x,sign_mask);
+//	__m256 xa = _mm256_cmp_ps(x,float_1,_CMP_LE_OQ);
+//
+//	x = _mm256_sub_ps(float_1,x);
+//
+//	return _mm256_and_ps(x,xa);
+//
+//}
+
 __device__ __host__ static __inline__
 realkind S2_shape(realkind x)
 {
@@ -99,6 +126,33 @@ realkind S2_shape(realkind x)
 
 	return result;
 }
+
+//static __inline__
+//__m256 S2_shape(__m256 x)
+//{
+//	// abs
+//	x = _mm256_and_ps(x,sign_mask);
+//	__m256 comp1 = _mm256_cmp_ps(x,float_05,_CMP_LE_OQ);
+//	__m256 comp2 = _mm256_cmp_ps(x,float_15,_CMP_LE_OQ);
+//
+//	__m256 x05,x15;
+//	// x05 = 0.75 - (x*x)
+//	x05 = _mm256_sub_ps(float_075,_mm256_mul_ps(x,x));
+//
+//	// check if (x <= 0.5)
+//	x05 = _mm256_and_ps(x05,comp1);
+//
+//	// x15 = 1.5-x
+//	x15 = _mm256_sub_ps(float_15,x);
+//	// x15 = 0.5*(1.5-x)*(1.5-x)
+//	x15 = _mm256_mul_ps(float_05,_mm256_mul_ps(x15,x15));
+//
+//	// check if (x <= 1.5 and x > 0.5)
+//	x15 = _mm256_andnot_ps(_mm256_and_ps(x15,comp2),comp1);
+//
+//	return _mm256_add_ps(x05,x15);
+//
+//}
 
 __device__ __host__ static __inline__
 realkind dS1_shape(realkind x)

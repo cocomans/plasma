@@ -94,7 +94,7 @@ PlasmaData::PlasmaData(int argc, char* argv[])
 
 	epsilon_r = 1.0e-10;
 	epsilon_a = 1.0e-4;
-	niter_max = 20;
+	niter_max = 40;
 	nSubcycle_max = 1000;
 	nSubcycle_min = 4;
 
@@ -123,6 +123,10 @@ PlasmaData::PlasmaData(int argc, char* argv[])
 	iFieldDataCPU = 0;
 
 	SimName = "unknown";
+
+	ClusterSortDim = 2;
+	ClusterStorDim = 32;
+	TBpCluster = 1;
 
 
 
@@ -273,6 +277,8 @@ PlasmaData::PlasmaData(int argc, char* argv[])
 
 		}
 
+		my_species = mynode%2;
+
 	}
 
 
@@ -390,7 +396,7 @@ void PlasmaData::set_cuda_device()
 {
 	device_type = 0;
 #ifndef NO_CUDA
-	if(myrank_node > 0)
+	if(myrank_node >= 0)
 	{
 		// First get the total number of cuda capable devices
 		int ndevices, ntesla;
@@ -414,7 +420,7 @@ void PlasmaData::set_cuda_device()
 			}
 		}
 
-		if((myrank_node-1) < ntesla)
+		if((myrank_node) < ntesla)
 		{
 			device_type = 1;
 			printf("node %i setting device %i\n",myrank_node,itesla[myrank_node-1]);
@@ -422,7 +428,7 @@ void PlasmaData::set_cuda_device()
 		}
 	}
 
-	device_type = 0;
+//	device_type = 0;
 #endif
 }
 

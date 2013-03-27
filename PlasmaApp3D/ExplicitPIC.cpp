@@ -85,7 +85,7 @@ void ExplicitPIC::simulate()
 #ifndef NO_CUDA
 		// Device is a GPU
 		particles[tid] = new ParticleListGPU();
-		fields[tid+1] = new FieldDataGPU();
+		fields[tid+1] = new FieldDataCPU();
 		moments[tid+1] = new HOMoments(pdata);
 
 		nptcls = pdata->nptcls_gpu;

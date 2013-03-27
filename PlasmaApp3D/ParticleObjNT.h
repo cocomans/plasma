@@ -20,6 +20,10 @@ class ParticleListGPU;
 class PlasmaData;
 class HOMoments;
 class CurrentTally;
+class PExitCheck;
+
+template<const int nSpatial,const int nVel>
+class BlockLimiter;
 
 
 template<const int N,const int nSpatial,const int nVel,const bool iEM>
@@ -28,7 +32,10 @@ class ParticleObjNT
 public:
 
 	__host__ __device__
-	ParticleObjNT(int* pid_in){pid=pid_in;}
+	ParticleObjNT(int* pid_in){pid=pid_in;printf("Warning, no exit checker given\n");}
+
+	__host__ __device__
+	ParticleObjNT(int* pid_in,PExitCheck* _exit_check):pid(pid_in),exit_checker(_exit_check){}
 
 	__host__ __device__
 	ParticleObjNT(){}
@@ -184,6 +191,8 @@ public:
 		ifinished(iptcl) = 0;
 
 		npiccard(iptcl) = 0;
+
+		species = list_in.ispecies;
 //		npiccard2(iptcl) = 0;
 
 	//	isubcycle(iptcl) = 0;
@@ -221,6 +230,8 @@ public:
 
 		npiccard(iptcl) = 0;
 		ifinished(iptcl) = 0;
+
+		species = list_in.ispecies;
 //		npiccard2(iptcl) = 0;
 
 	//	printf("particle[%i] on gpu: %f, %i, %f\n",ptcl,position(0)(iptcl),iposition(0)(iptcl),velocity(0)(iptcl));
@@ -240,6 +251,12 @@ public:
 	__device__
 	typevecN<realkind,N> time_till_crossing(typevecN<realkind,N>& v,typevecN<realkind,N>& p,
 					 typevecN<realkind,N>& dtau0,const realkind scale);
+	__device__ __attribute__((noinline))
+	typevecN<realkind,N> time_till_crossing2(
+									typevecN<realkind,N>& vin_half,
+									typevecN<realkind,N>& pin,
+									typevecN<realkind,N>& dtau0,typevecN<realkind,N>& dtau_cur,
+									const realkind scale);
 	__device__
 	void accumulate_current(PlasmaData* pdata, CurrentTally* currents,
 			const typevecN<typevecN<realkind,N>,nSpatial> position_half,
@@ -356,6 +373,9 @@ public:
 
 	int* pid; // location of this particles data in the main list
 	int species;
+
+	/// Flexible exit check conditions
+	PExitCheck* exit_checker;
 
 #ifndef GPU_CODE
 

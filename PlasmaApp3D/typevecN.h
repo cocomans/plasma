@@ -6,15 +6,18 @@
 #include <stdio.h>
 #include <iostream>
 #include <math.h>
+#include "PlasmaData.h"
 
 #ifdef GPU_CODE
 #define CUDA_CODE
 #endif
 
+
 #include "vec_funcs.h"
 #ifndef CUDA_CODE
 #include <immintrin.h>
 #endif
+
 
 // get AVX intrinsics
 
@@ -356,6 +359,23 @@ typevecN<T,N> __fmad(const typevecN<T2,N>& a, const typevecN<T,N>& b, const type
 	return d;
 }
 
+// Fused Multiply Add
+template<typename T,const int N> static __host__ __device__ __inline__
+typevecN<T,N> __fmad(const typevecN<T,N>& a, const T& b, const T& c)
+{
+	// Return a*b + c
+	typevecN<T,N> d;
+
+
+	for(int i=0;i<N;i++)
+	{
+		d.values[i] = a.values[i] * b + c;
+	}
+
+	return d;
+}
+
+
 // make_float3
 template<const int N> static __host__ __device__ __inline__
 typevecN<float3,N> make_float3N(const typevecN<float,N>& x,
@@ -548,7 +568,7 @@ typevecN<T,N> abs(const typevecN<T,N>& a)
 {
 	typevecN<T,N> c;
 
-#if !(defined CUDA_CODE || defined NO_HAND_VEC)
+#if (!(defined CUDA_CODE || defined NO_HAND_VEC))
 	if(N > 3)
 	{
 		 static const __m256d sign_mask = _mm256_set1_pd(-0.0);
@@ -574,12 +594,12 @@ typevecN<T,N> abs(const typevecN<T,N>& a)
 
 // sqrt
 template<typename T,const int N> static __host__ __device__ __inline__
-typevecN<T,N> sqrt(const typevecN<T,N>& a)
+typevecN<T,N> sqrtv(const typevecN<T,N>& a)
 {
 	typevecN<T,N> c;
 
 	for(int i=0;i<N;i++)
-		c.values[i] = sqrtf((float)(a.values[i]));
+		c.values[i] = sqrtf((a.values[i]));
 
 	return c;
 }
@@ -590,7 +610,7 @@ typevecN<T,N> max(const typevecN<T,N>& a,const typevecN<T,N>& b)
 {
 	typevecN<T,N> c;
 
-#if !(defined CUDA_CODE || defined NO_HAND_VEC)
+#if (!(defined CUDA_CODE || defined NO_HAND_VEC))
 	if(N > 3)
 	{
 		for(int i=0;i<N;i+=4)
@@ -619,7 +639,7 @@ typevecN<T,N> vmin(const typevecN<T,N>& a,const typevecN<T,N>& b)
 {
 	typevecN<T,N> c;
 
-#if !(defined CUDA_CODE || defined NO_HAND_VEC)
+#if (!(defined CUDA_CODE || defined NO_HAND_VEC))
 	if(N > 3)
 	{
 		for(int i=0;i<N;i+=4)
@@ -764,6 +784,52 @@ typevecN<T,N> sgn(const typevecN<T,N>& a)
 
 	return c;
 }
+
+template<const int N> static __host__ __device__ __inline__
+typevecN<realkind,N> sgn(const typevecN<realkind,N>& a)
+{
+	typevecN<realkind,N> c;
+
+
+
+
+#if !(defined CUDA_CODE || defined NO_HAND_VEC)
+	if(N > 3)
+	{
+		const __m256d v0 = _mm256_setzero_pd();
+		const __m256i one_mask = _mm256_setr_epi64x(0x3FF0000000000000,
+				0x3FF0000000000000,
+				0x3FF0000000000000,
+				0x3FF0000000000000);
+		const __m256d one_mask_d = (__m256d)one_mask;
+
+		for(int i=0;i<N;i+=4)
+		{
+			__m256d& av = *(__m256d*)(a.values+i);
+			__m256d& cv = *(__m256d*)(c.values+i);
+			cv = _mm256_sub_pd(_mm256_and_pd(_mm256_cmp_pd(v0,av,_CMP_LT_OQ),one_mask_d),
+						_mm256_and_pd(_mm256_cmp_pd(av,v0,_CMP_LT_OQ),one_mask_d));
+			//_mm256_store_pd(c.values+i,cv);
+		}
+	}
+	else
+		for(int i=0;i<N;i++)
+		{
+			c.values[i] = fastsgn(a(i));
+		}
+
+#else
+
+	for(int i=0;i<N;i++)
+	{
+		c.values[i] = fastsgn(a(i));
+	}
+
+#endif
+
+	return c;
+}
+
 
 template<typename T,const int i>
 class tloop {

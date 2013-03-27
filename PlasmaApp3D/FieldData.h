@@ -55,6 +55,16 @@ enum FieldData_deriv
 	FieldData_deriv_dfdz = 3
 };
 
+
+enum FieldData_type
+{
+	FieldData_cpu = 0,
+	FieldData_cpu_aos = 1,
+	FieldData_gpu = 2,
+	FieldData_mic = 3,
+	FieldData_mic_aos = 4
+};
+
 /*-------------------------------------------------------------------------*/
 /**
 	@class FieldData PlasmaData.h
@@ -184,7 +194,7 @@ public:
 				int icellx, int icelly, int icellz,
 				const int icomponent, const enum FieldData_deriv ideriv){return 0.0f;};
 
-	__host__ __device__
+	__device__
 	virtual void intrpAccel(realkind x, realkind y, realkind z,
 					realkind vx,realkind vy, realkind vz,
 					int icellx, int icelly, int icellz,
@@ -323,7 +333,7 @@ public:
 	/** Simulation information */
 	PlasmaData* pdata;
 
-	int FieldType;
+	enum FieldData_type FieldType;
 
 
 };

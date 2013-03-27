@@ -19,7 +19,7 @@ BYFL_INCLUDE="_ZN15ParticleListCPU5pushTILi1ELi2ELi3ELb1EEExP10PlasmaDataP9Field
 INCLUDE_PATHS:= -I/usr/local/cuda/include \
 				-I/usr/local/cuda-5.0/include \
 				-I./Util \
-				-I/home/opt/cuda/cuda-5.0/include \
+				-I/projects/opt/cuda/cuda-5.0/include \
 				-I/usr/include/mpich2-x86_64 \
 				-I./Field_Solvers/ES1D \
 				-I/projects/opt/mpi/openmpi/1.6.3_centos_gcc-4.4.6/include \
@@ -28,13 +28,13 @@ INCLUDE_PATHS:= -I/usr/local/cuda/include \
 #				-I/opt/cudatoolkit-4.1/include 
 				
 #Library Path
-LIBRARY_PATHS=/usr/local/cuda-5.0/lib64:/usr/lib64/mpich2/lib:$(LD_LIBRARY_PATH):/usr/lib64/openmpi/lib:$(NOX_LIBRARY_DIRS)
+LIBRARY_PATHS=/usr/local/cuda-5.0/lib64:/usr/lib64/mpich2/lib:$(LD_LIBRARY_PATH):/usr/lib64/openmpi/lib:$(NOX_LIBRARY_DIRS):/usr/lib64
 
-CXX_FLAGS= -O3 -std=gnu++0x -fopenmp  -march=native  $(INCLUDE_PATHS) #-L${LIBRARY_PATHS}
+CXX_FLAGS= -O3  -std=gnu++0x -fopenmp -march=native  $(INCLUDE_PATHS) #-L${LIBRARY_PATHS}
 #CXX_FLAGS+=-bf-include=$(BYFL_INCLUDE)
 
 
-NVCC_FLAGS= -O3 -arch=compute_20 --use_fast_math -code=sm_20  -Xcompiler $(INCLUDE_PATHS) -L${LIBRARY_PATHS} -Xcompiler -pg
+NVCC_FLAGS= -O3 -g -G -pg  -arch=compute_20 -code=sm_20  -Xcompiler $(INCLUDE_PATHS) -L${LIBRARY_PATHS} -Xcompiler -fopenmp
 #CXX_FLAGS= -Wall -O0 -fopenmp -g -std=gnu++0x $(INCLUDE_PATHS) -L${LIBRARY_PATHS}
 
 #CXX_FLAGS += -ftree-slp-vectorize -fkeep-static-consts -ftree-ch -floop-interchange -floop-parallelize-all -funroll-loops 
@@ -51,6 +51,8 @@ VPATH = ./:./Problem_Initializers:./Field_Solvers:../gnuplot_c/src:./Field_Solve
 A := $(shell echo abc)
 $(info $(MACHINE))
 
+
+
 ifndef MACHINE
 	LIBS = -lrt  -lmpichcxx
 	CUDA_LIB_DIR=/usr/local/cuda-5.0/lib64
@@ -60,7 +62,7 @@ ifeq "$(MACHINE)" "moonlight"
 	CUDA_LIB_DIR=/opt/cudatoolkit-4.1/lib64
 else
 ifeq "$(MACHINE)" "darwin"
-	LIBS = -lrt -lmpi_cxx
+	LIBS = -lrt -lmpi_cxx -L/projects/opt/libraries/numactl-2.0.7/lib64
 	CUDA_LIB_DIR=/projects/opt/cuda/cuda-5.0/lib64
 endif
 endif
@@ -95,8 +97,7 @@ EXECS:= ExB_test \
 	IonAcoustic_test \
 	Island_test
 
-OBJ:=ParticleObjN.o \
-	ParticleObjN1d1v.o \
+OBJ:=ParticleObjN1d1v.o \
 	ParticleObjN1d2v.o \
 	ParticleObjN1d3v.o \
 	ParticleObjN2d2v.o \
@@ -106,7 +107,6 @@ OBJ:=ParticleObjN.o \
 	gnuplot_i.o \
 	ParticleListCPU.o \
 	ParticleListCPUAoS.o \
-	CurrentTally.o \
 	ChargeTally.o \
 	StressTally.o \
 	AmpereSolve.o \
@@ -129,21 +129,35 @@ OBJ:=ParticleObjN.o \
 	Coupled1D_ES.o \
 	Island_Initializer.o \
 	FieldDataCPU2D.o \
-	ParticleListCPUSorted.o
+	ParticleListCPUSorted.o \
+	CurrentTallyCPU.o 
+	
 	
 	
 GPUOBJ:=ParticleObjNGPU.cubin \
-		CurrentTally.cubin \
 		ChargeTally.cubin \
 		StressTally.cubin \
 		CurrentTallyGPU.cubin \
 		HOMoments.cubin \
+		CurrentTallyCPU.cubin
 
 		
-GPUHOSTOBJ:= ParticleListGPUSimple.cu.cpp.ii \
+GPUHOSTOBJ:= FieldDataGPU.cu.cpp.ii \
+			ParticleListGPUSimple.cu.cpp.ii \
 			ParticleListGPU.cu.cpp.ii \
-			FieldDataGPU.cu.cpp.ii 
-		
+			GPU_Utils.cu.cpp.ii
+			
+			
+			
+ifneq ($(origin USECUDA),undefined)
+OBJ+= GPUObjects.o
+OBJ+= $(GPUHOSTOBJ)
+endif
+
+ifdef USE_MIC
+CC=icc
+CXX_FLAGS+=-offload-attribute-target=mic -DUSEMIC
+endif
 
 		
 	
@@ -181,7 +195,7 @@ $(BINDIR)/push_test : $(TESTDIR)/push_test.cpp $(OBJ)
 	mv push_test $(BINDIR)/push_test
 	
 $(BINDIR)/% : $(TESTDIR)/%.cpp $(OBJ)
-	$(CXX) $(CXX_FLAGS) ${OBJ} $(TESTDIR)/$*.cpp   $(CXX_FLAGS) -L${LIBRARY_PATHS} $(LIBS) -o $*
+	$(CXX) $(CXX_FLAGS) ${OBJ}  $(TESTDIR)/$*.cpp   $(CXX_FLAGS) -L${LIBRARY_PATHS} $(LIBS) -o $*
 	mv $* $(BINDIR)/$*
 
 
@@ -206,7 +220,7 @@ $(OBJDIR)/%.o : %.cxx
 $(OBJDIR)/%.cubin : %.cu
 	$(NVCC) $(NVCC_FLAGS) --cubin -D GPU_CODE -DCUDA_CODE --device-c $< -o $@
 
-ifeq ($(origin USECUDA),undefined)
+ifneq ($(origin USECUDA),undefined)
 $(OBJDIR)/%.cu.cpp.ii : %.cu
 	$(NVCC) $(NVCC_FLAGS) --cuda -DCUDA_CODE --device-c $< -o $@
 else

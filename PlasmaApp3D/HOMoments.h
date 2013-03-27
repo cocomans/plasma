@@ -70,7 +70,8 @@ enum HOMoments_moment
 	HOMoments_S2xz = 6,
 	HOMoments_S2yy = 7,
 	HOMoments_S2yz = 8,
-	HOMoments_S2zz = 9
+	HOMoments_S2zz = 9,
+	HOMoments_currentxyz = 10
 };
 
 /*-------------------------------------------------------------------------*/
@@ -121,6 +122,21 @@ public:
 	__host__ __device__
 	~HOMoments()
 	{
+	}
+
+	__host__
+	void Free()
+	{
+		free(charge);
+		free(currentx);
+		free(currenty);
+		free(currentz);
+		free(S2xx);
+		free(S2xy);
+		free(S2xz);
+		free(S2xz);
+		free(S2yz);
+		free(S2zz);
 	}
 
 	/// charge \f$\rho^{t+1}\f$ (0th Moment)

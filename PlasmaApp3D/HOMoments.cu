@@ -718,6 +718,90 @@ void HOMoments::close_plot()
 	gnuplot_close(plot_handle);
 }
 
+//void HOMoments::currentplot(int position,
+//		int plane = 0,
+//		int ispecies = 0)
+//{
+//	/*
+//	 * plane = 0: xy plane
+//	 * plane = 1: xz plane
+//	 * plane = 2: yz plane
+//	 */
+//	int nx, ny;
+//	int i,j,k;
+//
+//	int* i_out_t;
+//	int* j_out_t;
+//
+//	float dx,dy;
+//	float x0,y0;
+//
+//	float* x_vals;
+//	float* y_vals;
+//	float* z_vals;
+//
+//	realkind* vals_in;
+//	char* title;
+//
+//	if(plane == 0)
+//	{
+//		nx = pdata->nx;
+//		ny = pdata->ny;
+//
+//		dx = pdata->dxdi;
+//		dy = pdata->dydi;
+//
+//		x0 = pdata->xmin;
+//		y0 = pdata->ymin;
+//
+//		i_out_t = &i;
+//		j_out_t = &j;
+//
+//		gnuplot_cmd(plot_handle,"set xlabel \"x\"");
+//		gnuplot_cmd(plot_handle,"set ylabel \"y\"");
+//	}
+//	else if(plane == 1)
+//	{
+//		nx = pdata->nx;
+//		ny = pdata->nz;
+//
+//		dx = pdata->dxdi;
+//		dy = pdata->dzdi;
+//
+//		x0 = pdata->xmin;
+//		y0 = pdata->zmin;
+//
+//		i_out_t = &i;
+//		j_out_t = &k;
+//
+//		gnuplot_cmd(plot_handle,"set xlabel \"x\"");
+//		gnuplot_cmd(plot_handle,"set ylabel \"z\"");
+//	}
+//	else if(plane == 2)
+//	{
+//		nx = pdata->ny;
+//		ny = pdata->nz;
+//
+//		dx = pdata->dydi;
+//		dy = pdata->dzdi;
+//
+//		x0 = pdata->ymin;
+//		y0 = pdata->zmin;
+//
+//		i_out_t = &j;
+//		j_out_t = &k;
+//
+//		gnuplot_cmd(plot_handle,"set xlabel \"y\"");
+//		gnuplot_cmd(plot_handle,"set ylabel \"z\"");
+//	}
+//
+//	int& i_out = *i_out_t;
+//	int& j_out = *j_out_t;
+//
+//	x_vals = (float*)malloc(nx*ny*sizeof(float));
+//	y_vals = (float*)malloc(nx*ny*sizeof(float));
+//	z_vals = (float*)malloc(nx*ny*sizeof(float));
+//}
 
 void HOMoments::plot(int position, int plane = 0,int ispecies = 0, enum HOMoments_moment moment = HOMoments_charge)
 {
@@ -738,6 +822,10 @@ void HOMoments::plot(int position, int plane = 0,int ispecies = 0, enum HOMoment
 	float* x_vals;
 	float* y_vals;
 	float* z_vals;
+
+	float* dx_vals;
+	float* dy_vals;
+	float* dz_vals;
 
 	realkind* vals_in;
 	char* title;
@@ -784,14 +872,17 @@ void HOMoments::plot(int position, int plane = 0,int ispecies = 0, enum HOMoment
 		vals_in = S2zz;
 		title = "Stress zz";
 		break;
+	case HOMoments_currentxyz:
+		title = "Total Current";
+		break;
 	default:
 		break;
 	}
 
 	if(plane == 0)
 	{
-		nx = pdata->nx;
-		ny = pdata->ny;
+		nx = pdata->nx+1;
+		ny = pdata->ny+1;
 
 		dx = pdata->dxdi;
 		dy = pdata->dydi;
@@ -807,8 +898,8 @@ void HOMoments::plot(int position, int plane = 0,int ispecies = 0, enum HOMoment
 	}
 	else if(plane == 1)
 	{
-		nx = pdata->nx;
-		ny = pdata->nz;
+		nx = pdata->nx+1;
+		ny = pdata->nz+1;
 
 		dx = pdata->dxdi;
 		dy = pdata->dzdi;
@@ -824,8 +915,8 @@ void HOMoments::plot(int position, int plane = 0,int ispecies = 0, enum HOMoment
 	}
 	else if(plane == 2)
 	{
-		nx = pdata->ny;
-		ny = pdata->nz;
+		nx = pdata->ny+1;
+		ny = pdata->nz+1;
 
 		dx = pdata->dydi;
 		dy = pdata->dzdi;
@@ -847,33 +938,64 @@ void HOMoments::plot(int position, int plane = 0,int ispecies = 0, enum HOMoment
 	y_vals = (float*)malloc(nx*ny*sizeof(float));
 	z_vals = (float*)malloc(nx*ny*sizeof(float));
 
+	dx_vals = (float*)malloc(nx*ny*sizeof(float));
+	dy_vals = (float*)malloc(nx*ny*sizeof(float));
+	dz_vals = (float*)malloc(nx*ny*sizeof(float));
+
+	float scale = sqrt(pdata->Lx*pdata->Ly/(pdata->nx*pdata->ny))/2;
+
 	if(plane == 0)
 	{
 		k = 0;
 
-		for(j=0;j<pdata->ny;j++)
+		for(j=0;j<=pdata->ny;j++)
 		{
-			for(i=0;i<pdata->nx;i++)
+			for(i=0;i<=pdata->nx;i++)
 			{
 				x_vals[i_out] = dx*i_out + x0;
 				y_vals[j_out] = dy*j_out + y0;
 
 				float temp = 0;
 
+				float xcur = 0;
+				float ycur = 0;
+				float zcur = 0;
+
 				for(int l=0;l<pdata->nspecies;l++)
 				{
-					float t2 = get_val(i,j,k,l,moment)*pdata->qspecies[l];
 
-					if(isnan(t2))
+					if(moment == HOMoments_currentxyz)
 					{
-						printf("%s[%i, %i, %i, %i] is nan\n",title,i,j,k,l);
+						xcur += get_val(i,j,k,l,HOMoments_currentx)*pdata->qspecies[l];
+						ycur += get_val(i,j,k,l,HOMoments_currenty)*pdata->qspecies[l];
+						zcur += get_val(i,j,k,l,HOMoments_currentz)*pdata->qspecies[l];
+					}
+					else
+					{
+						float t2 = get_val(i,j,k,l,moment)*pdata->qspecies[l];
+
+						if(isnan(t2))
+						{
+							printf("%s[%i, %i, %i, %i] is nan\n",title,i,j,k,l);
+						}
+						temp += t2;
 					}
 
-					temp += t2;
 				}
 
+				if(moment == HOMoments_currentxyz)
+				{
 
-				z_vals[i_out+nx*j_out] = temp;
+					z_vals[i_out+nx*j_out] = sqrt(xcur*xcur+ycur*ycur+zcur*zcur);
+					dx_vals[i_out+nx*j_out] = xcur*scale/z_vals[i_out+nx*j_out];
+					dy_vals[i_out+nx*j_out] = ycur*scale/z_vals[i_out+nx*j_out];
+					dz_vals[i_out+nx*j_out] = zcur*scale/z_vals[i_out+nx*j_out];
+
+				}
+				else
+				{
+					z_vals[i_out+nx*j_out] = temp;
+				}
 			}
 		}
 	}
@@ -921,13 +1043,25 @@ void HOMoments::plot(int position, int plane = 0,int ispecies = 0, enum HOMoment
 	}
 
 	//if(ndimensions == 1)
-	gnuplot_plot_xyz(plot_handle,x_vals,y_vals,z_vals,nx,ny,title);
+	if(moment == HOMoments_currentxyz)
+	{
+		gnuplot_plot_xyz(plot_handle,x_vals,y_vals,z_vals,nx,ny,title);
+		gnuplot_cmd(plot_handle,"set view map");
+		gnuplot_cmd(plot_handle,"unset hidden3d");
+		gnuplot_plot_vector3D(plot_handle,x_vals,y_vals,z_vals,dx_vals,dy_vals,dz_vals,nx,ny,title);
 
+	}
+	else
+	{
+		gnuplot_plot_xyz(plot_handle,x_vals,y_vals,z_vals,nx,ny,title);
+	}
 
 	free(x_vals);
 	free(y_vals);
 	free(z_vals);
-
+	free(dx_vals);
+	free(dy_vals);
+	free(dz_vals);
 
 
 

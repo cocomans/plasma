@@ -11,7 +11,7 @@
 #include "ParticleListCPU.h"
 #include "ParticleObjNT.h"
 #include "ParticleObjN.h"
-#include "CurrentTally.h"
+#include "CurrentTallyCPU.h"
 #include "ChargeTally.h"
 #include "StressTally.h"
 #include "HOMoments.h"
@@ -22,6 +22,8 @@
 #include <omp.h>
 #include <utmpx.h>
 #include "CPUTimer.h"
+#include "PExitCheck.h"
+//#include "PExitCheckDefines.h"
 
 
 
@@ -111,8 +113,8 @@ void ParticleListCPU::allocate(PlasmaData* pdata,int nptcls_in)
 {
 	//printf("Allocating Particle List on the CPU\n");
 
-	if(pdata->plot_flag)
-	plot = gnuplot_init();
+//	if(pdata->plot_flag&&pdata->mynode==0)
+//		plot = gnuplot_init();
 
 	//gnuplot_cmd(plot,"set pointsize 0.1");
 	// Allocate memory for particles
@@ -178,7 +180,7 @@ void ParticleListCPU::allocate(PlasmaData* pdata,int nptcls_in)
 void ParticleListCPU::init(ProblemInitializer* initializer, HOMoments* moments)
 {
 
-	CurrentTally currents(&moments->get_val(0,0,0,ispecies,HOMoments_currentx),
+	CurrentTallyCPU currents(&moments->get_val(0,0,0,ispecies,HOMoments_currentx),
 						  &moments->get_val(0,0,0,ispecies,HOMoments_currenty),
 						  &moments->get_val(0,0,0,ispecies,HOMoments_currentz),
 						  make_int3(moments->pdata->nx,moments->pdata->ny,moments->pdata->nz),
@@ -191,9 +193,13 @@ void ParticleListCPU::init(ProblemInitializer* initializer, HOMoments* moments)
 						  moments->pdata->ndimensions);
 
 	StressTally stress(&moments->get_val(0,0,0,ispecies,HOMoments_S2xx),
-						  make_int3(moments->pdata->nx,moments->pdata->ny,moments->pdata->nz),
-						  moments->pdata->dxdi,moments->pdata->dydi,moments->pdata->dzdi,
-						  moments->pdata->ndimensions);
+			&moments->get_val(0,0,0,ispecies,HOMoments_S2xy),
+			&moments->get_val(0,0,0,ispecies,HOMoments_S2xz),
+			&moments->get_val(0,0,0,ispecies,HOMoments_S2yy),
+			&moments->get_val(0,0,0,ispecies,HOMoments_S2yz),
+			&moments->get_val(0,0,0,ispecies,HOMoments_S2zz),
+						  moments->pdata->nx,moments->pdata->ny,moments->pdata->nz,
+						  moments->pdata->ndimensions,moments->pdata->nVelocity);
 
 	moments -> set_vals(0);
 #pragma omp for
@@ -660,7 +666,7 @@ long long int ParticleListCPU::pushT(PlasmaData* pdata, FieldData* fields, HOMom
 
 
 	// Start the parallel loop
-#pragma omp parallel private(tid,nthreads,stride) default(shared) num_threads(nthreads)
+#pragma omp parallel private(tid,stride) default(shared) num_threads(nthreads)
 	{
 		nthreads = omp_get_num_threads();
 		//printf("nthreads = %i with vector length = %i\n",nthreads,VEC_LENGTH);
@@ -712,8 +718,11 @@ long long int ParticleListCPU::pushT(PlasmaData* pdata, FieldData* fields, HOMom
 		//printf("Thread %i starting at %i to %i with %i ptcls\n",
 			//	tid,ptcl_start,ptcl_end,nptcls_process);
 
+		/// Particle-subcycle exit checker
+		PExitCheckCPU* exit_checker = new PExitCheckCPU(pdata->dt,pdata->nSubcycle_max);
 
-		ParticleObjNT<VEC_LENGTH,nSpatial,nVel,iEM> particle(iptcl);
+
+		ParticleObjNT<VEC_LENGTH,nSpatial,nVel,iEM> particle(iptcl,exit_checker);
 
 		// Populate the timers
 		particle.piccard_timer = piccard_timer+tid;
@@ -731,7 +740,7 @@ long long int ParticleListCPU::pushT(PlasmaData* pdata, FieldData* fields, HOMom
 		for(int i=0;i<VEC_LENGTH;i++)
 			iter_array[i] = 0;
 
-		CurrentTally currents(&my_moment->get_val(0,0,0,ispecies,HOMoments_currentx),
+		CurrentTallyCPU currents(&my_moment->get_val(0,0,0,ispecies,HOMoments_currentx),
 							  &my_moment->get_val(0,0,0,ispecies,HOMoments_currenty),
 							  &my_moment->get_val(0,0,0,ispecies,HOMoments_currentz),
 							  make_int3(moments->pdata->nx,moments->pdata->ny,moments->pdata->nz),
@@ -744,9 +753,13 @@ long long int ParticleListCPU::pushT(PlasmaData* pdata, FieldData* fields, HOMom
 							  moments->pdata->ndimensions);
 
 		StressTally stress(&my_moment->get_val(0,0,0,ispecies,HOMoments_S2xx),
-							  make_int3(moments->pdata->nx,moments->pdata->ny,moments->pdata->nz),
-							  moments->pdata->dxdi,moments->pdata->dydi,moments->pdata->dzdi,
-							  moments->pdata->ndimensions);
+				&my_moment->get_val(0,0,0,ispecies,HOMoments_S2xy),
+				&my_moment->get_val(0,0,0,ispecies,HOMoments_S2xz),
+				&my_moment->get_val(0,0,0,ispecies,HOMoments_S2yy),
+				&my_moment->get_val(0,0,0,ispecies,HOMoments_S2yz),
+				&my_moment->get_val(0,0,0,ispecies,HOMoments_S2zz),
+							  moments->pdata->nx,moments->pdata->ny,moments->pdata->nz,
+							  moments->pdata->ndimensions,moments->pdata->nVelocity);
 
 		for(int i=0;i<VEC_LENGTH;i++)
 			iptcl[i] = ptcl_start+i;
@@ -924,10 +937,10 @@ long long int ParticleListCPU::pushT(PlasmaData* pdata, FieldData* fields, HOMom
 					ix[i],iy[i],iz[i],
 					1.0);
 
-			stress.tally1d1v(px[i],
-					vx[i],
-					ix[i],
-					1.0f);
+			stress.tally(px[i],py[i],pz[i],
+					vx[i],vy[i],vz[i],
+					ix[i],iy[i],iz[i],
+					1.0);
 
 
 			//if(fabs(dt_finished[i] - pdata->dt) > 1.0e-5)

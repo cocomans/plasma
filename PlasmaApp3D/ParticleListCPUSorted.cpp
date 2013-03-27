@@ -11,7 +11,7 @@
 #include "ParticleListCPUSorted.h"
 #include "ParticleObjNT.h"
 #include "ParticleObjN.h"
-#include "CurrentTally.h"
+#include "CurrentTallyCPU.h"
 #include "ChargeTally.h"
 #include "StressTally.h"
 #include "HOMoments.h"
@@ -23,7 +23,7 @@
 #include <utmpx.h>
 #include "CPUTimer.h"
 #include <vector>
-#include "Util/omptl/omptl_algorithm"
+
 
 
 ParticleListCPUSorted::ParticleListCPUSorted()
@@ -112,8 +112,8 @@ void ParticleListCPUSorted::allocate(PlasmaData* pdata,int nptcls_in)
 {
 	//printf("Allocating Particle List on the CPU\n");
 
-	if(pdata->plot_flag)
-	plot = gnuplot_init();
+//	if(pdata->plot_flag)
+//	plot = gnuplot_init();
 
 	//gnuplot_cmd(plot,"set pointsize 0.1");
 	// Allocate memory for particles
@@ -182,7 +182,7 @@ void ParticleListCPUSorted::allocate(PlasmaData* pdata,int nptcls_in)
 void ParticleListCPUSorted::init(ProblemInitializer* initializer, HOMoments* moments)
 {
 
-	CurrentTally currents(&moments->get_val(0,0,0,ispecies,HOMoments_currentx),
+	CurrentTallyCPU currents(&moments->get_val(0,0,0,ispecies,HOMoments_currentx),
 						  &moments->get_val(0,0,0,ispecies,HOMoments_currenty),
 						  &moments->get_val(0,0,0,ispecies,HOMoments_currentz),
 						  make_int3(moments->pdata->nx,moments->pdata->ny,moments->pdata->nz),
@@ -195,9 +195,13 @@ void ParticleListCPUSorted::init(ProblemInitializer* initializer, HOMoments* mom
 						  moments->pdata->ndimensions);
 
 	StressTally stress(&moments->get_val(0,0,0,ispecies,HOMoments_S2xx),
-						  make_int3(moments->pdata->nx,moments->pdata->ny,moments->pdata->nz),
-						  moments->pdata->dxdi,moments->pdata->dydi,moments->pdata->dzdi,
-						  moments->pdata->ndimensions);
+			&moments->get_val(0,0,0,ispecies,HOMoments_S2xy),
+			&moments->get_val(0,0,0,ispecies,HOMoments_S2xz),
+			&moments->get_val(0,0,0,ispecies,HOMoments_S2yy),
+			&moments->get_val(0,0,0,ispecies,HOMoments_S2yz),
+			&moments->get_val(0,0,0,ispecies,HOMoments_S2zz),
+						  moments->pdata->nx,moments->pdata->ny,moments->pdata->nz,
+						  moments->pdata->ndimensions,moments->pdata->nVelocity);
 
 	moments -> set_vals(0);
 #pragma omp for
@@ -949,7 +953,7 @@ long long int ParticleListCPUSorted::pushT(PlasmaData* pdata, FieldData* fields,
 
 
 	// Start the parallel loop
-#pragma omp parallel private(tid,nthreads,stride) default(shared) num_threads(nthreads)
+#pragma omp parallel private(tid,stride) default(shared) num_threads(nthreads)
 	{
 		nthreads = omp_get_num_threads();
 		//printf("nthreads = %i with vector length = %i\n",nthreads,VEC_LENGTH);
@@ -1020,7 +1024,7 @@ long long int ParticleListCPUSorted::pushT(PlasmaData* pdata, FieldData* fields,
 		for(int i=0;i<VEC_LENGTH;i++)
 			iter_array[i] = 0;
 
-		CurrentTally currents(&my_moment->get_val(0,0,0,ispecies,HOMoments_currentx),
+		CurrentTallyCPU currents(&my_moment->get_val(0,0,0,ispecies,HOMoments_currentx),
 							  &my_moment->get_val(0,0,0,ispecies,HOMoments_currenty),
 							  &my_moment->get_val(0,0,0,ispecies,HOMoments_currentz),
 							  make_int3(moments->pdata->nx,moments->pdata->ny,moments->pdata->nz),
@@ -1032,10 +1036,14 @@ long long int ParticleListCPUSorted::pushT(PlasmaData* pdata, FieldData* fields,
 							  moments->pdata->dxdi,moments->pdata->dydi,moments->pdata->dzdi,
 							  moments->pdata->ndimensions);
 
-		StressTally stress(&my_moment->get_val(0,0,0,ispecies,HOMoments_S2xx),
-							  make_int3(moments->pdata->nx,moments->pdata->ny,moments->pdata->nz),
-							  moments->pdata->dxdi,moments->pdata->dydi,moments->pdata->dzdi,
-							  moments->pdata->ndimensions);
+		StressTally stress(&moments->get_val(0,0,0,ispecies,HOMoments_S2xx),
+				&moments->get_val(0,0,0,ispecies,HOMoments_S2xy),
+				&moments->get_val(0,0,0,ispecies,HOMoments_S2xz),
+				&moments->get_val(0,0,0,ispecies,HOMoments_S2yy),
+				&moments->get_val(0,0,0,ispecies,HOMoments_S2yz),
+				&moments->get_val(0,0,0,ispecies,HOMoments_S2zz),
+							  moments->pdata->nx,moments->pdata->ny,moments->pdata->nz,
+							  moments->pdata->ndimensions,moments->pdata->nVelocity);
 
 		for(int i=0;i<VEC_LENGTH;i++)
 			iptcl[i] = ptcl_start+i;

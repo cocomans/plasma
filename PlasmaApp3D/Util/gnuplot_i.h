@@ -483,6 +483,31 @@ void gnuplot_plot_xyz(
     char            *   title
 ) ;
 
+void gnuplot_plot_vector(
+    gnuplot_ctrl    *   handle,
+	float			*	x,
+	float			*	y,
+	float			*	z,
+	float			*	dx,
+	float			*	dy,
+    int                 nx,
+    int                 ny,
+    char            *   title
+);
+
+void gnuplot_plot_vector3D(
+    gnuplot_ctrl    *   handle,
+	float			*	x,
+	float			*	y,
+	float			* 	z,
+	float			*	dx,
+	float			*	dy,
+	float			*	dz,
+    int                 nx,
+    int                 ny,
+    char            *   title
+);
+
 void gnuplot_plot_rbgaimage(
     gnuplot_ctrl    *   handle,
 	pixel			*	pixels,
