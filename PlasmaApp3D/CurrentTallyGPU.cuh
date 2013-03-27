@@ -9,67 +9,78 @@
 #include "PlasmaData.h"
 #include "CurrentTally.h"
 
+#ifdef GPU_CODE
+#define FUNCTION_TYPE __attribute__((device))
+#else
+#define FUNCTION_TYPE __attribute__((host,device))
+#endif
 
 
 class CurrentTallyGPU : public CurrentTally
 {
 public:
-	__host__ __device__
-	CurrentTallyGPU(realkind* currentx_in,
-			realkind* currenty_in,
-			realkind* currentz_in,
-			int3 dims_in,
-			realkind spacingx,realkind spacingy,realkind spacingz,
+
+	FUNCTION_TYPE
+	CurrentTallyGPU(float* currentx_in,
+			float* currenty_in,
+			float* currentz_in,
+			int _nx, int _ny, int _nz,
+			int _ix0,int _iy0,int _iz0,
 			int ndimensions_in);
-	__host__ __device__
-	CurrentTallyGPU();
-	__device__
+
+	FUNCTION_TYPE
+	CurrentTallyGPU(){};
+
+	FUNCTION_TYPE
+	~CurrentTallyGPU(){}
+
+	FUNCTION_TYPE
 	void tally1d1v(const realkind px,
 			 const realkind vx,
 			 const int ix_in,
 			 const realkind scale);
-	__device__
+	FUNCTION_TYPE
 	void tally1d2v(const realkind px,
 			 const realkind vx,const realkind vy,
 			 const int ix_in,
 			 const realkind scale);
-	__device__
+	FUNCTION_TYPE
 	void tally1d3v(const realkind px,
 			 const realkind vx,const realkind vy,const realkind vz,
 			 const int ix_in,
 			 const realkind scale);
-	__device__
+	FUNCTION_TYPE
 	void tally2d2v(const realkind px,const realkind py,
 			 const realkind vx,const realkind vy,
 			 const int ix_in,const int iy_in,
 			 const realkind scale);
-	__device__
+	FUNCTION_TYPE
 	void tally2d3v(const realkind px,const realkind py,
 			 const realkind vx,const realkind vy,const realkind vz,
 			 const int ix_in,const int iy_in,
 			 const realkind scale);
-	__device__
+	FUNCTION_TYPE
 	void tally3d3v(const realkind px,const realkind py,const realkind pz,
 			 const realkind vx,const realkind vy,const realkind vz,
 			 const int ix_in,const int iy_in,const int iz_in,
 			 const realkind scale);
 
 
-	__device__
+	FUNCTION_TYPE
 	void tally(const realkind px, const realkind py, const realkind pz,
 			 const realkind vx, const realkind vy, const realkind vz,
 			 const int ix, const int iy, const int iz,
 			 const realkind scale);
 
 
-	realkind* currentx;
-	realkind* currenty;
-	realkind* currentz;
+	float* currentxf;
+	float* currentyf;
+	float* currentzf;
 
+//	int nxt,nyt,nzt;
+	int ix0,iy0,iz0;
+//	int ndimensionst;
 	int nx,ny,nz;
-	int nptcls;
-	int ndimensions;
-	realkind dx,dy,dz;
 
 
 };

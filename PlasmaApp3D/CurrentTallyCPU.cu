@@ -1,9 +1,9 @@
 /*-------------------------------------------------------------------------*/
 /**
-  @file		CurrentTally.cu
+  @file		CurrentTallyCPU.cpp
 */
 /*--------------------------------------------------------------------------*/
-#include "CurrentTally.h"
+#include "CurrentTallyCPU.h"
 #include "ShapeFunctions.h"
 
 #ifdef GPU_CODE
@@ -22,9 +22,8 @@ void atomicAddD(double* address,double value)
 #endif
 
 
-
 FUNCTION_TYPE
-CurrentTally::CurrentTally(realkind* currentx_in,
+CurrentTallyCPU::CurrentTallyCPU(realkind* currentx_in,
 						   realkind* currenty_in,
 						   realkind* currentz_in,
 						   int3 dims_in,
@@ -48,10 +47,10 @@ CurrentTally::CurrentTally(realkind* currentx_in,
 }
 
 FUNCTION_TYPE
-CurrentTally::CurrentTally(){}
+CurrentTallyCPU::CurrentTallyCPU(){}
 
 FUNCTION_TYPE
-void CurrentTally::tally1d1v(const realkind px,
+void CurrentTallyCPU::tally1d1v(const realkind px,
 		 const realkind vx,
 		 const int ix_in,
 		 const realkind scale)
@@ -96,7 +95,7 @@ void CurrentTally::tally1d1v(const realkind px,
 }
 
 FUNCTION_TYPE
-void CurrentTally::tally1d2v(const realkind px,
+void CurrentTallyCPU::tally1d2v(const realkind px,
 		 const realkind vx,const realkind vy,
 		 const int ix_in,
 		 const realkind scale)
@@ -151,8 +150,8 @@ void CurrentTally::tally1d2v(const realkind px,
 
 }
 
-__host__ __device__
-void CurrentTally::tally1d3v(const realkind px,
+FUNCTION_TYPE
+void CurrentTallyCPU::tally1d3v(const realkind px,
 		 const realkind vx,const realkind vy,const realkind vz,
 		 const int ix_in,
 		 const realkind scale)
@@ -227,8 +226,8 @@ void CurrentTally::tally1d3v(const realkind px,
 
 }
 
-__host__ __device__
-void CurrentTally::tally2d2v(const realkind px,const realkind py,
+FUNCTION_TYPE
+void CurrentTallyCPU::tally2d2v(const realkind px,const realkind py,
 		 const realkind vx,const realkind vy,
 		 const int ix_in,const int iy_in,
 		 const realkind scale)
@@ -297,8 +296,8 @@ void CurrentTally::tally2d2v(const realkind px,const realkind py,
 
 }
 
-__host__ __device__
-void CurrentTally::tally2d3v(const realkind px,const realkind py,
+FUNCTION_TYPE
+void CurrentTallyCPU::tally2d3v(const realkind px,const realkind py,
 		 const realkind vx,const realkind vy,const realkind vz,
 		 const int ix_in,const int iy_in,
 		 const realkind scale)
@@ -330,6 +329,7 @@ void CurrentTally::tally2d3v(const realkind px,const realkind py,
 				temp = 0.5f*vx*S1_shape(xp)*S2_shape(yp)*vol_inv;
 //				printf("temp = %f\n",temp);
 				currentx[ix + nx*(iy)] += temp;
+
 
 			}
 		}
@@ -395,8 +395,8 @@ void CurrentTally::tally2d3v(const realkind px,const realkind py,
 
 }
 
-__host__ __device__
-void CurrentTally::tally3d3v(const realkind px,const realkind py,const realkind pz,
+FUNCTION_TYPE
+void CurrentTallyCPU::tally3d3v(const realkind px,const realkind py,const realkind pz,
 		 const realkind vx,const realkind vy,const realkind vz,
 		 const int ix,const int iy,const int iz,
 		 const realkind scale)
@@ -404,8 +404,8 @@ void CurrentTally::tally3d3v(const realkind px,const realkind py,const realkind 
 
 }
 
-__host__ __device__
-void CurrentTally::tally(const realkind px, const realkind py, const realkind pz,
+FUNCTION_TYPE
+void CurrentTallyCPU::tally(const realkind px, const realkind py, const realkind pz,
 						 const realkind vx, const realkind vy, const realkind vz,
 						 const int ix_in, const int iy_in, const int iz_in,
 						 const realkind scale)

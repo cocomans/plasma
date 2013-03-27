@@ -1,8 +1,8 @@
 /*-------------------------------------------------------------------------*/
 /**
-	@file		CurrentTally.h
+	@file		CurrentTallyCPU.h
 	@author	J. Payne
-	@date		12/21/2012
+	@date		03/01/2013
 	@brief	Class to control the tallying of the 1st high order moment, current
 
 	This class is populated with a local current tally, This can encompass the
@@ -15,15 +15,10 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef Current_Tally_H
-#define Current_Tally_H
+#ifndef Current_Tally_CPU_H
+#define Current_Tally_CPU_H
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <iostream>
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include "PlasmaData.h"
+#include "CurrentTally.h"
 
 #ifdef GPU_CODE
 #define FUNCTION_TYPE __attribute__((device))
@@ -33,7 +28,7 @@
 
 /*-------------------------------------------------------------------------*/
 /**
-	@class CurrentTally CurrentTally.h
+	@class CurrentTallyCPU
 	@author	J. Payne
 	@date		12/21/2012
 	@brief	Class to control the tallying of the 1st high order moment, current
@@ -41,7 +36,7 @@
 	\paragraph Detailed information:
 	This class is populated with a local current tally, This can encompass the
 	entire domain or a subset of the domain. This class should be used for
-	both GPU and cpu code.
+	both cpu code.
 
 	Essentially this class handles the following equations:
 	\f{eqnarray}{
@@ -63,12 +58,38 @@
 
 */
 /*--------------------------------------------------------------------------*/
-class CurrentTally
+class CurrentTallyCPU : public CurrentTally
 {
 public:
 
+	/*-------------------------------------------------------------------------*/
+	/**
+		@brief Constructs a CurrentTally object
+		@param[in] currentx_in,currenty_in,currentz_in Pointers
+		 to memory space where x, y, and z current tallies will be stored
+		@param[in] dims_in size of the CurrentTally domain: nx, ny, nz
+		@param[in] spacingx, Physical x space per cell: dxdi
+		@param[in] spacingy, Physical y space per cell: dydi
+		@param[in] spacingz, Physical z spcae per cell: dzdi
+		@param[in] ndimensions_in Number of spatial dimensions to be used.
+
+	*/
+	/*--------------------------------------------------------------------------*/
 	FUNCTION_TYPE
-	virtual ~CurrentTally(){}
+	CurrentTallyCPU(realkind* currentx_in,
+			realkind* currenty_in,
+			realkind* currentz_in,
+			int3 dims_in,
+			realkind spacingx,realkind spacingy,realkind spacingz,
+			int ndimensions_in);
+
+	/*-------------------------------------------------------------------------*/
+	/**
+		@brief Empty Constructor
+	*/
+	/*--------------------------------------------------------------------------*/
+	FUNCTION_TYPE
+	CurrentTallyCPU();
 
 	/*-------------------------------------------------------------------------*/
 	/**
@@ -83,10 +104,10 @@ public:
 	*/
 	/*--------------------------------------------------------------------------*/
 	FUNCTION_TYPE
-	virtual void tally1d1v(const realkind px,
+	void tally1d1v(const realkind px,
 			 const realkind vx,
 			 const int ix_in,
-			 const realkind scale){}
+			 const realkind scale);
 	/*-------------------------------------------------------------------------*/
 	/**
 		@brief 1D2V tally function
@@ -100,10 +121,10 @@ public:
 	*/
 	/*--------------------------------------------------------------------------*/
 	FUNCTION_TYPE
-	virtual void tally1d2v(const realkind px,
+	void tally1d2v(const realkind px,
 			 const realkind vx,const realkind vy,
 			 const int ix_in,
-			 const realkind scale){}
+			 const realkind scale);
 	/*-------------------------------------------------------------------------*/
 	/**
 		@brief 1D3V tally function
@@ -117,10 +138,10 @@ public:
 	*/
 	/*--------------------------------------------------------------------------*/
 	FUNCTION_TYPE
-	virtual void tally1d3v(const realkind px,
+	void tally1d3v(const realkind px,
 			 const realkind vx,const realkind vy,const realkind vz,
 			 const int ix_in,
-			 const realkind scale){}
+			 const realkind scale);
 	/*-------------------------------------------------------------------------*/
 	/**
 		@brief 2D2V tally function
@@ -134,10 +155,10 @@ public:
 	*/
 	/*--------------------------------------------------------------------------*/
 	FUNCTION_TYPE
-	virtual void tally2d2v(const realkind px,const realkind py,
+	void tally2d2v(const realkind px,const realkind py,
 			 const realkind vx,const realkind vy,
 			 const int ix_in,const int iy_in,
-			 const realkind scale){}
+			 const realkind scale);
 	/*-------------------------------------------------------------------------*/
 	/**
 		@brief 2D3V tally function
@@ -151,10 +172,10 @@ public:
 	*/
 	/*--------------------------------------------------------------------------*/
 	FUNCTION_TYPE
-	virtual void tally2d3v(const realkind px,const realkind py,
+	void tally2d3v(const realkind px,const realkind py,
 			 const realkind vx,const realkind vy,const realkind vz,
 			 const int ix_in,const int iy_in,
-			 const realkind scale){}
+			 const realkind scale);
 	/*-------------------------------------------------------------------------*/
 	/**
 		@brief 3D3V tally function
@@ -168,10 +189,10 @@ public:
 	*/
 	/*--------------------------------------------------------------------------*/
 	FUNCTION_TYPE
-	virtual void tally3d3v(const realkind px,const realkind py,const realkind pz,
+	void tally3d3v(const realkind px,const realkind py,const realkind pz,
 			 const realkind vx,const realkind vy,const realkind vz,
 			 const int ix_in,const int iy_in,const int iz_in,
-			 const realkind scale){}
+			 const realkind scale);
 
 	/*-------------------------------------------------------------------------*/
 	/**
@@ -179,10 +200,10 @@ public:
 	*/
 	/*--------------------------------------------------------------------------*/
 	FUNCTION_TYPE
-	virtual void tally(const realkind px, const realkind py, const realkind pz,
+	void tally(const realkind px, const realkind py, const realkind pz,
 			 const realkind vx, const realkind vy, const realkind vz,
 			 const int ix, const int iy, const int iz,
-			 const realkind scale){}
+			 const realkind scale);
 
 
 	realkind* currentx;
@@ -197,11 +218,11 @@ public:
 
 	/// number of spatial dimensions
 	int ndimensions;
-//	/*! \name Cell spacings
-//	*/
-//	//@{
-//	realkind dx,dy,dz;
-//	//@}
+	/*! \name Cell spacings
+	*/
+	//@{
+	realkind dx,dy,dz;
+	//@}
 
 
 
@@ -215,4 +236,4 @@ public:
 
 
 
-#endif /* Current_Tally_H */
+#endif /* Current_Tally_CPU_H */
