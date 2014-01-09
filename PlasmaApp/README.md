@@ -16,8 +16,8 @@ This flexibility will be accomplished by separating the physics algorithms from 
 
 ### Building 
 
-<dt><code>$>gmake</code></dt>
-<dd>build all of the required libraries.
+<dt><code>$>gmake packages</code></dt>
+<dd>build all of the required libraries. (Might stop at mesa or paraview, these are not required, only trilinos is required.
 
 <dt><code>$>gmake tests</code></dt>
 <dd>build all of the test routines
@@ -38,7 +38,8 @@ to use the correct one.
 <dt><code>NOHANDVEC=1</dt></code>
 <dd> Disables hand vectorization, This should be used if your machine does not support AVX
 
-
+<dt><code>TRILINOS=1</dt></code>
+<dd> builds with trilinos low order solvers. Required for Electro-magnetic problems
 
 
 ### Running
@@ -102,6 +103,9 @@ running the Two Stream Instability problem
 
 <dt><code>-g</dt></code>
 <dd>Turns on plotting
+
+<dt><code>-p</dt></code>
+<dd>Specifies port for browser based output.
 
 <dt><code>--lo-all</dt></code>
 <dd>run the lo order solver on all nodes
