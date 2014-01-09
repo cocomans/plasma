@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style type="text/css">
+	h2.console {background-color:gray; color:white;text-align:center;}
+	h3.console {background-color:gray; color:white;text-align:left;}
+
+	</style>
+	<script type='text/javascript' src='https://www.google.com/jsapi'></script>
+	<script>
+      google.load('visualization', '1.0', {packages:["corechart","controls"]});
+
+      function drawLineChart(data_in,div,options) {
+        var data = google.visualization.arrayToDataTable(data_in);
+
+
+
+        var chart = new google.visualization.LineChart(document.getElementById(div));
+        chart.draw(data, options);
+      }
+      
+      function drawLineChart2(chart,div,options) {
+      
+		var nfields = chart.nplots + 1;
+		var data_arr = new Array();
+		
+		for(var i=0;i<chart.data.length;i+=nfields)
+	      {
+			var temp_arr = new Array();
+			for(var j=0;j<nfields;j++)
+			{
+				temp_arr[j] = chart.data[i+j];
+			}
+			
+			data_arr[i/nfields] = temp_arr;
+	      
+	      }
+		
+        var data = google.visualization.arrayToDataTable(data_arr);
+
+
+
+        var chart = new google.visualization.LineChart(document.getElementById(div));
+        chart.draw(data, options);
+      }
+      
+      function drawDashScatterChart(chart,div,control,dashboard_div) {
+      
+		var nfields = chart.nplots + 1;
+		var data_arr = new Array();
+		
+		for(var i=0;i<chart.data.length;i+=nfields)
+	      {
+			var temp_arr = new Array();
+			for(var j=0;j<nfields;j++)
+			{
+				temp_arr[j] = chart.data[i+j];
+			}
+			
+			data_arr[i/nfields] = temp_arr;
+	      
+	      }
+		
+        var data = google.visualization.arrayToDataTable(data_arr);
+
+
+
+        var chart = new google.visualization.ScatterChart(document.getElementById(div));
+        
+        var dashboard = new google.visualization.Dashboard(document.getElementById(dashboard_div));
+        
+        chart.draw(data);
+      }
+	function print_to_frame(loggdata,logframe) {
+		var msg_data = loggdata;
+		var ifrm = logframe;
+		ifrm = (ifrm.contentWindow) ? ifrm.contentWindow : (ifrm.contentDocument.document) ? ifrm.contentDocument.document : ifrm.contentDocument;
+		ifrm.document.open();
+		for (var j=msg_data.length-1;j>-1;j--){
+		ifrm.document.write(msg_data[j]+"<br>");}
+		ifrm.document.close();
+	
+	}
+	
+	var oppicard_data = new Array();
+    var logger_names = ["logger1", "logger2", "logger3","logger4"];
+
+    var initial_update = true;
+    
+    function startup() {
+            var evtSource = new EventSource("http://localhost:<!PORT_NUMBER!>/stream");
+
+		var loggers = new Array();
+        loggers[0] = document.getElementById("logger1");
+        loggers[1] = document.getElementById("logger2");
+        loggers[2] = document.getElementById("logger3");
+        loggers[3] = document.getElementById("logger4");
+        var eventList = document.getElementById("eventList");
+
+
+        
+
+        
+         oppicard_data[0] = ['istep','last','average'];
+        
+        // Start listening on the event source
+        
+        evtSource.onmessage = function(e) {
+
+        
+			var obj2 = JSON.parse(e.data);
+			var log_data = obj2.container;
+			var charts = log_data.charts;
+			var sim_params = log_data.params;
+			
+			if(initial_update){
+			var run_div = document.getElementById("species_info");
+			var particle_info = sim_params.species_info;
+			for(var i=0;i<particle_info.length;i++){
+			var float = new String();
+			if(i == 0)
+				float = "left";
+			else
+				float = "right";
+				var temp = "<div style=\"float:left;\">";
+				
+				temp += "<div style=\"margin: 5px;\">"
+				
+				temp += "<h3 class=\"console\"> &nbsp" + particle_info[i].name + "</h3>";
+				temp += "Number of Particles: " + particle_info[i].nptcls + "<br>";
+				temp += "Charge: " + particle_info[i].charge.toExponential(4) + "<br>";
+				temp += "Mass: " + particle_info[i].mass.toExponential(4) + "<br>";
+				temp += "Simulation Weight: " + particle_info[i].weight.toExponential(4) + "<br>";
+
+				
+				
+				temp += "</div>";
+				temp += "</div>";
+				
+				run_div.innerHTML += temp;
+			
+			}
+			
+			initial_update=false;
+			}
+			
+			
+			
+			var opd_msg = log_data.opicard_data;
+			
+			oppicard_data.push([opd_msg.istep,opd_msg.npiccard_o_last,opd_msg.npiccard_o_avg]);
+			var options = {
+				title: 'Outer Piccard Info',
+				vAxes: [
+						{title: 'Last', minValue: 0, maxValue: 10}, // Left axis
+						{title: 'Average', minValue: 0, maxValue: 10} // Right axis
+						],
+				series:[{targetAxisIndex:0},{targetAxisIndex:1}]
+				};
+				
+			var consoptions = {
+			title: 'Conservation Quantitities',
+			vAxes: [
+					{title: 'Energy',format: "0.000E+00",logScale: true}, // Left axis
+					{title: 'Charge',format: "0.000E+00",logScale: true} // Right axis
+					],
+			series:[{targetAxisIndex:0},{targetAxisIndex:1}]
+			};
+			
+			var fenergy = {
+			title: 'Field Energy',
+			vAxes: [
+					{title: 'Energy',format: "0.000E+00",logScale: true} // Left axis
+					]
+			};
+			
+			var penergy = {
+			title: 'Particle Energy',
+			vAxes: [
+					{title: 'Energy',format: "0.000E+00",logScale: true} // Left axis
+					]
+			};
+			
+			var momdiff = {
+			title: 'Relative Moment Differences',
+			vAxes: [
+					{title: 'Relative Difference',format: "0.000E+00",logScale: true} // Left axis
+					]
+			};
+				
+
+
+			//drawGuages(obj2);
+			drawLineChart(oppicard_data,'opiccard_div',options);
+			drawLineChart2(charts.ConservationQuantities,'cons_quantities',consoptions);
+			print_to_frame(log_data.logger1,loggers[0]);
+			print_to_frame(log_data.logger2,loggers[1]);
+			print_to_frame(log_data.logger3,loggers[2]);
+			print_to_frame(log_data.logger4,loggers[3]);
+
+
+			drawLineChart2(charts.FieldEnergy,'field_e',fenergy);
+			drawLineChart2(charts.ParticleEnergy,'particle_e',penergy);
+			drawLineChart2(charts.MomentDiffs,'moment_diffs',momdiff);
+
+
+
+        }
+    }
+    
+    
+    
+   </script>
+   
+
+</head>
+<body onload="startup()">
+<h1>Welcome to the CoCoPIC Framework WebUI</h1>
+
+<form action="http://localhost:<!PORT_NUMBER!>" method="post" target="_self">
+  First name: <input type="text" name="fname"><br>
+  Last name: <input type="text" name="lname"><br>
+  <input type="submit" value="Submit">
+</form>
+<div id="run_info" style="height:200px; width: 100%; ">
+<h2>Run Information</h2>
+
+<div id='species_info' style="height:200px; width: 50%;">
+
+</div>
+
+</div><br>
+
+
+<div>
+	<div style="height: 500px; width: 49%; float:left;">
+		<div style="height: 500px; width: 49%; float:left;" >
+			<h2 class="console">LO System</h2>
+			<iframe height="300px" width="100%" id="logger1"> </iframe>
+		</div>
+		<div style="height: 500px; width: 49%; float:right;" ><h2 class="console">HO System</h2>
+		<iframe height="300px" width="100%" id="logger2"> </iframe></div>
+	</div>
+		<div style="height: 500px; width: 49%; float:right;">
+		<div style="height: 500px; width: 49%; float:left;" ><h2 class="console">Outer Loop</h2>
+		<iframe height="300px" width="100%" id="logger3"> </iframe></div>
+		<div style="height: 500px; width: 49%; float:right;" ><h2 class="console">Debug</h2>
+		<iframe height="300px" width="100%" id="logger4"> </iframe></div>
+	</div>
+</div><br>
+	<div style="height: 500px; width: 49%; float:left;">
+<div id='opiccard_div' style="height: 250px; width: 49%; float:left;"></div>
+<div id='cons_quantities' style="height: 250px; width: 49%; float:right;"></div>
+</div>
+<div style="height: 500px; width: 49%; float:right;">
+<div id='particle_e' style="height: 250px; width: 49%; float:left;"></div>
+<div id='field_e' style="height: 250px; width: 49%; float:right;"></div>
+</div><br>
+<div id='moment_diffs' style="height: 1000px; width: 100%; float:left;"></div>
+</body>
+</html>

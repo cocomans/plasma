@@ -1,0 +1,395 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/CoCoMANS/svn/!svn/ver/880/code/plasma/PlasmaApp/src
+END
+ProblemInitializer.h
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/CoCoMANS/svn/!svn/ver/826/code/plasma/PlasmaApp/src/ProblemInitializer.h
+END
+ParallelInfo.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/CoCoMANS/svn/!svn/ver/800/code/plasma/PlasmaApp/src/ParallelInfo.h
+END
+HOMoments.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/CoCoMANS/svn/!svn/ver/595/code/plasma/PlasmaApp/src/HOMoments.h
+END
+RandGen.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/RandGen.h
+END
+FieldDataGPUSimple.cu
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/CoCoMANS/svn/!svn/ver/860/code/plasma/PlasmaApp/src/FieldDataGPUSimple.cu
+END
+HOMomentsMIC1.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/CoCoMANS/svn/!svn/ver/595/code/plasma/PlasmaApp/src/HOMomentsMIC1.h
+END
+CurrentTallyGPU.cu
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/CoCoMANS/svn/!svn/ver/860/code/plasma/PlasmaApp/src/CurrentTallyGPU.cu
+END
+StressTallyGPU.cu
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/CoCoMANS/svn/!svn/ver/860/code/plasma/PlasmaApp/src/StressTallyGPU.cu
+END
+OutputCtrl.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/CoCoMANS/svn/!svn/ver/780/code/plasma/PlasmaApp/src/OutputCtrl.h
+END
+ParticleObjNT.inl
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/CoCoMANS/svn/!svn/ver/826/code/plasma/PlasmaApp/src/ParticleObjNT.inl
+END
+StressTallyCPU.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/StressTallyCPU.h
+END
+ChargeTallyCPU.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/CoCoMANS/svn/!svn/ver/742/code/plasma/PlasmaApp/src/ChargeTallyCPU.cpp
+END
+HOMomentsMIC.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/HOMomentsMIC.h
+END
+ParallelInfo.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/CoCoMANS/svn/!svn/ver/800/code/plasma/PlasmaApp/src/ParallelInfo.cpp
+END
+StressTallyGPU.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/CoCoMANS/svn/!svn/ver/742/code/plasma/PlasmaApp/src/StressTallyGPU.h
+END
+ImplicitPIC.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/CoCoMANS/svn/!svn/ver/595/code/plasma/PlasmaApp/src/ImplicitPIC.h
+END
+NodeHOMoments.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/CoCoMANS/svn/!svn/ver/826/code/plasma/PlasmaApp/src/NodeHOMoments.cpp
+END
+HOMomentsCPU.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/CoCoMANS/svn/!svn/ver/873/code/plasma/PlasmaApp/src/HOMomentsCPU.cpp
+END
+FieldData.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/CoCoMANS/svn/!svn/ver/780/code/plasma/PlasmaApp/src/FieldData.h
+END
+ParticleListCPUSorted.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/CoCoMANS/svn/!svn/ver/591/code/plasma/PlasmaApp/src/ParticleListCPUSorted.cpp
+END
+ClusterInfo.cuh
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/CoCoMANS/svn/!svn/ver/595/code/plasma/PlasmaApp/src/ClusterInfo.cuh
+END
+PExitCheck.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/CoCoMANS/svn/!svn/ver/726/code/plasma/PlasmaApp/src/PExitCheck.h
+END
+ParticleListMIC.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/ParticleListMIC.h
+END
+HOMomentsGPUs.cu
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/CoCoMANS/svn/!svn/ver/780/code/plasma/PlasmaApp/src/HOMomentsGPUs.cu
+END
+ShapeFunctions.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/CoCoMANS/svn/!svn/ver/600/code/plasma/PlasmaApp/src/ShapeFunctions.h
+END
+typevecN.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/CoCoMANS/svn/!svn/ver/860/code/plasma/PlasmaApp/src/typevecN.h
+END
+NodeParticleList.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/CoCoMANS/svn/!svn/ver/860/code/plasma/PlasmaApp/src/NodeParticleList.cpp
+END
+ParticleObjNT.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/CoCoMANS/svn/!svn/ver/800/code/plasma/PlasmaApp/src/ParticleObjNT.h
+END
+CurrentTallyCPU.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/CoCoMANS/svn/!svn/ver/571/code/plasma/PlasmaApp/src/CurrentTallyCPU.h
+END
+ImplicitPIC.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/CoCoMANS/svn/!svn/ver/800/code/plasma/PlasmaApp/src/ImplicitPIC.cpp
+END
+ParticleListCPU.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/CoCoMANS/svn/!svn/ver/860/code/plasma/PlasmaApp/src/ParticleListCPU.cpp
+END
+PlasmaData.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/CoCoMANS/svn/!svn/ver/860/code/plasma/PlasmaApp/src/PlasmaData.cpp
+END
+FieldDataMIC.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/FieldDataMIC.h
+END
+ChargeTallyCPU.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/CoCoMANS/svn/!svn/ver/591/code/plasma/PlasmaApp/src/ChargeTallyCPU.h
+END
+cuda_defines.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/CoCoMANS/svn/!svn/ver/603/code/plasma/PlasmaApp/src/cuda_defines.h
+END
+ChargeTallyGPU.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/CoCoMANS/svn/!svn/ver/591/code/plasma/PlasmaApp/src/ChargeTallyGPU.h
+END
+NodeFieldData.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/CoCoMANS/svn/!svn/ver/826/code/plasma/PlasmaApp/src/NodeFieldData.cpp
+END
+NodeHOMoments.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/CoCoMANS/svn/!svn/ver/780/code/plasma/PlasmaApp/src/NodeHOMoments.h
+END
+typevecN2.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/CoCoMANS/svn/!svn/ver/591/code/plasma/PlasmaApp/src/typevecN2.h
+END
+FieldDataCPU.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/CoCoMANS/svn/!svn/ver/860/code/plasma/PlasmaApp/src/FieldDataCPU.cpp
+END
+HOMomentsCPU.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/CoCoMANS/svn/!svn/ver/735/code/plasma/PlasmaApp/src/HOMomentsCPU.h
+END
+ParticleListGPUSorted.cuh
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/CoCoMANS/svn/!svn/ver/780/code/plasma/PlasmaApp/src/ParticleListGPUSorted.cuh
+END
+HOMomentsGPU.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/CoCoMANS/svn/!svn/ver/571/code/plasma/PlasmaApp/src/HOMomentsGPU.h
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/CoCoMANS/svn/!svn/ver/860/code/plasma/PlasmaApp/src/Makefile
+END
+CurrentTallyCPU.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/CoCoMANS/svn/!svn/ver/812/code/plasma/PlasmaApp/src/CurrentTallyCPU.cpp
+END
+FieldDataGPUSimple.cuh
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/CoCoMANS/svn/!svn/ver/800/code/plasma/PlasmaApp/src/FieldDataGPUSimple.cuh
+END
+ParticleListMICSimple.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/ParticleListMICSimple.h
+END
+ParticleListGPU.cuh
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/CoCoMANS/svn/!svn/ver/571/code/plasma/PlasmaApp/src/ParticleListGPU.cuh
+END
+NodeParticleList.h
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/CoCoMANS/svn/!svn/ver/591/code/plasma/PlasmaApp/src/NodeParticleList.h
+END
+ParticleListCPU.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/CoCoMANS/svn/!svn/ver/800/code/plasma/PlasmaApp/src/ParticleListCPU.h
+END
+PlasmaData.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/CoCoMANS/svn/!svn/ver/880/code/plasma/PlasmaApp/src/PlasmaData.h
+END
+HOMomentsGPUs.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/CoCoMANS/svn/!svn/ver/595/code/plasma/PlasmaApp/src/HOMomentsGPUs.h
+END
+vec_funcs.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/CoCoMANS/svn/!svn/ver/595/code/plasma/PlasmaApp/src/vec_funcs.h
+END
+ParticleListGPUSorted.cu
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/CoCoMANS/svn/!svn/ver/860/code/plasma/PlasmaApp/src/ParticleListGPUSorted.cu
+END
+FieldSolver.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/CoCoMANS/svn/!svn/ver/800/code/plasma/PlasmaApp/src/FieldSolver.h
+END
+OutputCtrl.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/CoCoMANS/svn/!svn/ver/880/code/plasma/PlasmaApp/src/OutputCtrl.cpp
+END
+FieldDataMICSimple.h
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/FieldDataMICSimple.h
+END
+NodeFieldData.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/CoCoMANS/svn/!svn/ver/571/code/plasma/PlasmaApp/src/NodeFieldData.h
+END
+FieldDataCPU.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/CoCoMANS/svn/!svn/ver/812/code/plasma/PlasmaApp/src/FieldDataCPU.h
+END
+Normalization.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/CoCoMANS/svn/!svn/ver/735/code/plasma/PlasmaApp/src/Normalization.h
+END
+FieldDataGPU.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/FieldDataGPU.h
+END
+ChargeTallyGPU.cu
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/CoCoMANS/svn/!svn/ver/800/code/plasma/PlasmaApp/src/ChargeTallyGPU.cu
+END
+StressTallyCPU.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/CoCoMANS/svn/!svn/ver/812/code/plasma/PlasmaApp/src/StressTallyCPU.cpp
+END
+CurrentTallyGPU.cuh
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/CoCoMANS/svn/!svn/ver/595/code/plasma/PlasmaApp/src/CurrentTallyGPU.cuh
+END
+RunData.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/CoCoMANS/svn/!svn/ver/753/code/plasma/PlasmaApp/src/RunData.h
+END

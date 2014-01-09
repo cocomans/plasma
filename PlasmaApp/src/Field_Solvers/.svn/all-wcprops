@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/CoCoMANS/svn/!svn/ver/872/code/plasma/PlasmaApp/src/Field_Solvers
+END
+Coupled1D_ES.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/Coupled1D_ES.cpp
+END
+AmpereSolver.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/CoCoMANS/svn/!svn/ver/595/code/plasma/PlasmaApp/src/Field_Solvers/AmpereSolver.h
+END
+ConstantSolver.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/CoCoMANS/svn/!svn/ver/595/code/plasma/PlasmaApp/src/Field_Solvers/ConstantSolver.h
+END
+Coupled1D_ES.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/CoCoMANS/svn/!svn/ver/595/code/plasma/PlasmaApp/src/Field_Solvers/Coupled1D_ES.h
+END
+InitSolve.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/CoCoMANS/svn/!svn/ver/827/code/plasma/PlasmaApp/src/Field_Solvers/InitSolve.cpp
+END
+Coupled1D_ES_JFNK.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/Coupled1D_ES_JFNK.cpp
+END
+InitSolve.h
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/CoCoMANS/svn/!svn/ver/800/code/plasma/PlasmaApp/src/Field_Solvers/InitSolve.h
+END
+AmpereSolver.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/CoCoMANS/svn/!svn/ver/714/code/plasma/PlasmaApp/src/Field_Solvers/AmpereSolver.cpp
+END
+ConstantSolver.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/CoCoMANS/svn/!svn/ver/591/code/plasma/PlasmaApp/src/Field_Solvers/ConstantSolver.cpp
+END
+Coupled1D_ES_JFNK.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/Coupled1D_ES_JFNK.h
+END

@@ -1,0 +1,30 @@
+ 
+include $(TOP_DIR)/Make.common
+TrilinosSrcDir:=$(PWD)/trilinos-11.4.1-Source
+TrilinosBuildDir:=$(PWD)/trilinos-build
+TrilinosInstallDir:=$(TRILINOS_DIR)
+
+all: $(TrilinosInstallDir)
+ 
+trilinos-11.4.1-Source.tar.gz:
+	wget http://trilinos.sandia.gov/download/files/trilinos-11.4.1-Source.tar.gz
+
+$(TrilinosSrcDir): trilinos-11.4.1-Source.tar.gz
+	tar -xvf trilinos-11.4.1-Source.tar.gz
+
+$(TrilinosBuildDir)/Makefile: $(TrilinosSrcDir) do-configure.sh
+	mkdir -p $(TrilinosBuildDir); \
+	cp do-configure.sh $(TrilinosBuildDir)/do-configure.sh; \
+	cd $(TrilinosBuildDir); \
+	TRILINOS_HOME=$(TrilinosSrcDir) TRILINOS_INSTALL=$(TrilinosInstallDir) sh ./do-configure.sh 
+
+$(TrilinosInstallDir): $(TrilinosBuildDir)/Makefile
+	cd $(TrilinosBuildDir); \
+	gmake -j 48 
+	cd $(TrilinosBuildDir); \
+	gmake -j 48 install
+	
+realclean:
+	rm -rf $(TrilinosBuildDir)
+	rm -rf $(TrilinosSrcDir)
+	rm -f *.tar.gz

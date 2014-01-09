@@ -1,0 +1,35 @@
+ 
+include $(TOP_DIR)/Make.common
+ 
+ 
+MesaDir:=$(TOP_DIR)/pkgs/mesa/Mesa-7.6.1
+Mesa_dwnld:= ftp://ftp.freedesktop.org/pub/mesa/older-versions/7.x/7.6.1/MesaLib-7.6.1.tar.gz
+
+MesaLIB:=$(MesaDIR)/lib/libOSMesa.so
+
+
+all: $(MesaLIB)
+
+MesaLib-7.6.1.tar.gz:
+	wget $(Mesa_dwnld)
+
+$(MesaDir)/configure: MesaLib-7.6.1.tar.gz
+	tar -xvf MesaLib-7.6.1.tar.gz
+
+$(MesaDir)/Makefile: $(MesaDir)/configure
+	cd $(MesaDir); \
+	./configure --with-driver=xlib --enable-gl-osmesa
+
+$(MesaLIB): $(MesaDir)/Makefile $(LIBDIR)
+	cd $(MesaDir); \
+	gmake -j 32
+	ln -f $(MesaDir)/libs/*.so* $(LIBDIR)/
+	
+$(LIBDIR):
+	mkdir -p $(LIBDIR)
+	
+realclean:
+	rm -rf Mesa-7.6.1
+	rm -f *.tar.gz
+
+

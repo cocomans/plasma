@@ -1,0 +1,38 @@
+ 
+include $(TOP_DIR)/Make.common
+ 
+ 
+
+all: $(ParaViewInstallDir)/bin/paraview
+
+paraview-source.tgz:
+	wget -O paraview-source.tgz "http://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v4.0&type=source&os=all&downloadFile=ParaView-v4.0.1-source.tgz"
+
+
+$(ParaViewSrcDir): paraview-source.tgz
+	tar -xf paraview-source.tgz
+
+$(ParaViewBuildDir)/Makefile: $(ParaViewSrcDir) pv-configure.sh $(MESALIB_LIB)
+	mkdir -p $(ParaViewBuildDir)
+	cp pv-configure.sh $(ParaViewBuildDir)
+	cd $(ParaViewBuildDir); \
+	ParaViewSrcDir=$(ParaViewSrcDir) MesaLIB=$(MESALIB_LIB) MesaDIR=$(MESALIB_DIR)/Mesa-7.6.1 sh ./pv-configure.sh
+	
+	
+
+$(ParaViewInstallDir)/bin/paraview: $(ParaViewBuildDir)/Makefile
+	cd $(ParaViewBuildDir); \
+	gmake -j 48
+	cd $(ParaViewBuildDir); \
+	gmake install -j 48
+ 
+ 
+
+
+realclean:
+	rm -rf $(ParaViewSrcDir)
+	rm -rf $(ParaViewBuildDir)
+	rm -rf $(ParaViewInstallDir)
+	rm -f *.tar.gz
+
+

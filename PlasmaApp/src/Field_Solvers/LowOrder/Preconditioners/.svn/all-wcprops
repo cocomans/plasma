@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/Preconditioners
+END
+Precon1D1V.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/Preconditioners/Precon1D1V.cpp
+END
+MLSolver.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/Preconditioners/MLSolver.cpp
+END
+Precon1D1V.h
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/Preconditioners/Precon1D1V.h
+END
+MLSolver.h
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/Preconditioners/MLSolver.h
+END

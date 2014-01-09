@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder
+END
+LoParams.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/LoParams.h
+END
+Preconditioner.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/Preconditioner.cpp
+END
+NonLinearSolver.h
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/NonLinearSolver.h
+END
+Problem.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/Problem.h
+END
+BoundaryValues.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/BoundaryValues.h
+END
+Preconditioner.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/Preconditioner.h
+END
+DiscretePDE.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/DiscretePDE.cpp
+END
+LoParams.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/LoParams.cpp
+END
+DiscretePDE.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/DiscretePDE.h
+END
+NonLinearSolver.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/NonLinearSolver.cpp
+END
+Problem.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/CoCoMANS/svn/!svn/ver/882/code/plasma/LowOrderSolverTemplate/src/LowOrder/Problem.cpp
+END

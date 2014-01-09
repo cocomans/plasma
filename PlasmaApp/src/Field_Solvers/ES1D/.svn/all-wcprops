@@ -1,0 +1,137 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D
+END
+PlasmaData2.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/PlasmaData2.cxx
+END
+LOSolver.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/LOSolver.h
+END
+LOMomentsES.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/LOMomentsES.h
+END
+MomentSolution.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/MomentSolution.cxx
+END
+LOSolverJFNK.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/LOSolverJFNK.cpp
+END
+ES1D_2S_Problem.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/ES1D_2S_Problem.cpp
+END
+ParticleSolution.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/ParticleSolution.cxx
+END
+LOSolverSI.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/LOSolverSI.cxx
+END
+ConsistencyTermES.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/ConsistencyTermES.cpp
+END
+PlasmaUtility.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/PlasmaUtility.cxx
+END
+NLResidual.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/NLResidual.cxx
+END
+DhatConsistency.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/DhatConsistency.cxx
+END
+ConsistencyTermES.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/ConsistencyTermES.h
+END
+PlasmaData2.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/PlasmaData2.h
+END
+ES1D_2S_Problem_Interface.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/ES1D_2S_Problem_Interface.cpp
+END
+MomentSolution.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/MomentSolution.h
+END
+LOMomentsES.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/LOMomentsES.cpp
+END
+ParticleSolution.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/ParticleSolution.h
+END
+LOSolverSI.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/LOSolverSI.h
+END
+PlasmaUtility.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/PlasmaUtility.h
+END
+DhatConsistency.h
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/DhatConsistency.h
+END
+NLResidual.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Field_Solvers/ES1D/NLResidual.h
+END

@@ -1,0 +1,155 @@
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/CoCoMANS/svn/!svn/ver/860/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D
+END
+MapManager2D.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/CoCoMANS/svn/!svn/ver/860/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/MapManager2D.cpp
+END
+MLSolver2D.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/CoCoMANS/svn/!svn/ver/814/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/MLSolver2D.h
+END
+DiscretePDE2D_1D3Vem.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/CoCoMANS/svn/!svn/ver/813/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/DiscretePDE2D_1D3Vem.cpp
+END
+vector_viewer.nb
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/CoCoMANS/svn/!svn/ver/814/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/vector_viewer.nb
+END
+DiscretePDE2D_2D3Vem.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/CoCoMANS/svn/!svn/ver/826/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/DiscretePDE2D_2D3Vem.cpp
+END
+MapManager2D.h
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/CoCoMANS/svn/!svn/ver/814/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/MapManager2D.h
+END
+EpVecWrapper.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/CoCoMANS/svn/!svn/ver/814/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/EpVecWrapper.cpp
+END
+LowOrderProblem2D.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/CoCoMANS/svn/!svn/ver/826/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/LowOrderProblem2D.cpp
+END
+DiscretePDE2D_1D1Ves.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/CoCoMANS/svn/!svn/ver/814/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/DiscretePDE2D_1D1Ves.cpp
+END
+DiscretePDE2D_1D3Vem.h
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/CoCoMANS/svn/!svn/ver/814/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/DiscretePDE2D_1D3Vem.h
+END
+DiscretePDE2D_2D3Vem.h
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/CoCoMANS/svn/!svn/ver/813/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/DiscretePDE2D_2D3Vem.h
+END
+HoLoInterface2D.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/CoCoMANS/svn/!svn/ver/826/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/HoLoInterface2D.cpp
+END
+EpVecWrapper.h
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/CoCoMANS/svn/!svn/ver/826/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/EpVecWrapper.h
+END
+DiscretePDE2D_1D3Vem_D.h
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/CoCoMANS/svn/!svn/ver/813/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/DiscretePDE2D_1D3Vem_D.h
+END
+DiscretePDE2D_1D1Ves.h
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/CoCoMANS/svn/!svn/ver/813/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/DiscretePDE2D_1D1Ves.h
+END
+LowOrderProblem2D.h
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/CoCoMANS/svn/!svn/ver/826/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/LowOrderProblem2D.h
+END
+HoLoInterface2D.h
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/CoCoMANS/svn/!svn/ver/814/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/HoLoInterface2D.h
+END
+DiscretePDE_1D3Vem_D.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/CoCoMANS/svn/!svn/ver/814/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/DiscretePDE_1D3Vem_D.cpp
+END
+JFNK2D.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/CoCoMANS/svn/!svn/ver/826/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/JFNK2D.cpp
+END
+PhysBasedPrec2D.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/CoCoMANS/svn/!svn/ver/814/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/PhysBasedPrec2D.cpp
+END
+JFNK2D.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/CoCoMANS/svn/!svn/ver/814/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/JFNK2D.h
+END
+machinefile
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/CoCoMANS/svn/!svn/ver/814/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/machinefile
+END
+DiscretePDE2D.h
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/CoCoMANS/svn/!svn/ver/813/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/DiscretePDE2D.h
+END
+PhysBasedPrec2D.h
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/CoCoMANS/svn/!svn/ver/813/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/PhysBasedPrec2D.h
+END
+MLSolver2D.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/CoCoMANS/svn/!svn/ver/813/code/plasma/PlasmaApp/src/Field_Solvers/HoLoInterface2D/MLSolver2D.cpp
+END

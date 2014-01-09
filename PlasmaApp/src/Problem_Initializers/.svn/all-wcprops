@@ -1,0 +1,113 @@
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/CoCoMANS/svn/!svn/ver/872/code/plasma/PlasmaApp/src/Problem_Initializers
+END
+EnergyCons_Initializer.h
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Problem_Initializers/EnergyCons_Initializer.h
+END
+PushVal_Initializer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/CoCoMANS/svn/!svn/ver/649/code/plasma/PlasmaApp/src/Problem_Initializers/PushVal_Initializer.cpp
+END
+ExB_Initializer.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/CoCoMANS/svn/!svn/ver/591/code/plasma/PlasmaApp/src/Problem_Initializers/ExB_Initializer.h
+END
+IonAcoustic_Initializer.h
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/CoCoMANS/svn/!svn/ver/591/code/plasma/PlasmaApp/src/Problem_Initializers/IonAcoustic_Initializer.h
+END
+TwoStream_Initializer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/CoCoMANS/svn/!svn/ver/742/code/plasma/PlasmaApp/src/Problem_Initializers/TwoStream_Initializer.cpp
+END
+PushVal_Initializer.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/CoCoMANS/svn/!svn/ver/649/code/plasma/PlasmaApp/src/Problem_Initializers/PushVal_Initializer.h
+END
+TwoStream_Initializer.h
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/CoCoMANS/svn/!svn/ver/571/code/plasma/PlasmaApp/src/Problem_Initializers/TwoStream_Initializer.h
+END
+EWave2D_Initializer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/CoCoMANS/svn/!svn/ver/826/code/plasma/PlasmaApp/src/Problem_Initializers/EWave2D_Initializer.cpp
+END
+EWave2D_Initializer.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/CoCoMANS/svn/!svn/ver/826/code/plasma/PlasmaApp/src/Problem_Initializers/EWave2D_Initializer.h
+END
+Landau_Initializer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/CoCoMANS/svn/!svn/ver/591/code/plasma/PlasmaApp/src/Problem_Initializers/Landau_Initializer.cpp
+END
+Weibel_Initializer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/CoCoMANS/svn/!svn/ver/872/code/plasma/PlasmaApp/src/Problem_Initializers/Weibel_Initializer.cpp
+END
+Landau_Initializer.h
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Problem_Initializers/Landau_Initializer.h
+END
+Island_Initializer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/CoCoMANS/svn/!svn/ver/812/code/plasma/PlasmaApp/src/Problem_Initializers/Island_Initializer.cpp
+END
+Weibel_Initializer.h
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/CoCoMANS/svn/!svn/ver/760/code/plasma/PlasmaApp/src/Problem_Initializers/Weibel_Initializer.h
+END
+EnergyCons_Initializer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/CoCoMANS/svn/!svn/ver/570/code/plasma/PlasmaApp/src/Problem_Initializers/EnergyCons_Initializer.cpp
+END
+ExB_Initializer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/CoCoMANS/svn/!svn/ver/726/code/plasma/PlasmaApp/src/Problem_Initializers/ExB_Initializer.cpp
+END
+Island_Initializer.h
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/CoCoMANS/svn/!svn/ver/598/code/plasma/PlasmaApp/src/Problem_Initializers/Island_Initializer.h
+END
+IonAcoustic_Initializer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/CoCoMANS/svn/!svn/ver/800/code/plasma/PlasmaApp/src/Problem_Initializers/IonAcoustic_Initializer.cpp
+END

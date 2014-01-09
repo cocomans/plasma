@@ -1,0 +1,7 @@
+K 10
+svn:ignore
+V 17
+run.x
+run.x.dSYM
+
+END

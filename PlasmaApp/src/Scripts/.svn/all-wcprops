@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/CoCoMANS/svn/!svn/ver/800/code/plasma/PlasmaApp/src/Scripts
+END
+pv-configure.sh~
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/CoCoMANS/svn/!svn/ver/783/code/plasma/PlasmaApp/src/Scripts/pv-configure.sh~
+END
+pv-configure.sh
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/CoCoMANS/svn/!svn/ver/783/code/plasma/PlasmaApp/src/Scripts/pv-configure.sh
+END
+Makefile.trilinos
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/CoCoMANS/svn/!svn/ver/782/code/plasma/PlasmaApp/src/Scripts/Makefile.trilinos
+END
+Makefile.mesa
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/CoCoMANS/svn/!svn/ver/800/code/plasma/PlasmaApp/src/Scripts/Makefile.mesa
+END
+do-configure.sh
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/CoCoMANS/svn/!svn/ver/780/code/plasma/PlasmaApp/src/Scripts/do-configure.sh
+END
+Makefile.paraview
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/CoCoMANS/svn/!svn/ver/800/code/plasma/PlasmaApp/src/Scripts/Makefile.paraview
+END

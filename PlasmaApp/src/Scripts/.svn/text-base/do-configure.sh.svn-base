@@ -1,0 +1,31 @@
+#!/bin/sh
+EXTRA_ARGS=$@
+#TRILINOS_HOME=../trilinos-11.4.1-Source
+echo $TRILINOS_HOME
+echo $TRILINOS_INSTALL
+
+cmake \
+  -D CMAKE_INSTALL_PREFIX:PATH=${TRILINOS_INSTALL} \
+  -D Trilinos_SHOW_DEPRECATED_WARNINGS:BOOL=OFF \
+  -D Trilinos_ENABLE_TESTS:BOOL=ON \
+  -D CMAKE_BUILD_TYPE:STRING=DEBUG \
+  -D TPL_ENABLE_MPI:BOOL=ON \
+  -D TPL_ENABLE_OpenMP:BOOL=ON \
+  -D Trilinos_ENABLE_Fortran:BOOL=ON \
+  -D TPL_ENABLE_BLAS:BOOL=ON \
+  -D TPL_ENABLE_LAPACK:BOOL=ON \
+  -D BLAS_LIBRARY_DIRS:PATH=/usr/lib64 \
+  -D BLAS_LIBRARY_NAMES:STRING="libblas.so.3" \
+  -D LAPACK_LIBRARY_NAMES:STRING="liblapack.so.3" \
+  -D Trilinos_ENABLE_Teuchos:BOOL=ON \
+  -D Trilinos_ENABLE_Epetra:BOOL=ON \
+  -D Trilinos_ENABLE_Amesos:BOOL=ON \
+  -D Trilinos_ENABLE_AztecOO:BOOL=ON \
+  -D Trilinos_ENABLE_NOX:BOOL=ON \
+  -D Trilinos_ENABLE_ML:BOOL=ON \
+  -D CMAKE_CXX_FLAGS:STRING="-O3 -ftree-vectorize" \
+  -D CMAKE_CC_FLAGS:STRING="-O3" \
+  -D CMAKE_Fortran_FLAGS:STRING="-O3" \
+  $EXTRA_ARGS \
+  ${TRILINOS_HOME}
+

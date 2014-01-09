@@ -1,0 +1,148 @@
+
+
+TRILINOS_PKG_DIR:=$(TOP_DIR)/pkgs/trilinos
+TRILINOS_DIR:=$(TRILINOS_PKG_DIR)/trilinos-install
+TRILINOS_INSTALL_DIR=$(TRILINOS_DIR)
+
+
+#Object Director
+OBJDIR:=$(TOP_DIR)/obj
+ASMDIR:=$(TOP_DIR)/asm
+BINDIR:=$(TOP_DIR)/bin
+TESTDIR:=$(TOP_DIR)/src/tests
+LIBDIR:=$(TOP_DIR)/lib
+PKGDIR:=$(TOP_DIR)/pkgs
+SRCDIR:=$(TOP_DIR)/src
+
+LIBADAPTOR_BD:=$(PKGDIR)/Adaptor-build
+LIBADAPTOR_SRCD:=$(TOP_DIR)/src/Util/IPICAdaptor
+
+MESALIB_DIR:=$(PKGDIR)/mesa
+MESALIB_LIB:=$(MESALIB_DIR)/Mesa-7.6.1/lib/libOSMesa.so
+
+ParaView_DIR:= $(PKGDIR)/paraview/paraview-build
+ParaViewSrcDir:=$(PKGDIR)/paraview/ParaView-v4.0.1-source
+ParaViewBuildDir:=$(ParaView_DIR)
+ParaViewInstallDir:=$(PKGDIR)/paraview/paraview-install
+
+#LLIBS:=  libIPICAdaptor.so
+
+ifdef BYFL_BUILD
+EXECS:=Island_test
+else
+EXECS:= TwoStream_test \
+		IonAcoustic_test \
+		ExB_test \
+		Island_test \
+		PushVal_test \
+		Weibel_test \
+		EWave2D_test \
+		CoCoPIC
+endif		
+
+OBJ:=NodeHOMoments.o \
+	NodeParticleList.o \
+	NodeFieldData.o \
+	FieldDataCPU.o \
+	ParticleObjN1d1v.o \
+	ParticleObjN1d2v.o \
+	ParticleObjN1d3v.o \
+	ParticleObjN2d2v.o \
+	ParticleObjN2d3v.o \
+	ParticleObjN3d3v.o \
+	gnuplot_i.o \
+	ParticleListCPU.o \
+	ChargeTallyCPU.o \
+	StressTallyCPU.o \
+	HOMomentsCPU.o \
+	ParallelInfo.o \
+	PlasmaData.o \
+	AmpereSolver.o \
+	ConstantSolver.o \
+	TwoStream_Initializer.o \
+	IonAcoustic_Initializer.o \
+	Island_Initializer.o \
+	ExB_Initializer.o \
+	PushVal_Initializer.o \
+	ImplicitPIC.o \
+	PlasmaUtility.o \
+	CurrentTallyCPU.o \
+	OutputCtrl.o \
+	mkpath.o \
+	Weibel_Initializer.o \
+	NormElectronEM.o \
+	rand.o \
+	sse-server.o \
+	LogStream.o \
+	sseDataStream.o \
+	InitSolve.o \
+	NormIslandEM.o \
+	EWave2D_Initializer.o
+	
+	
+ifdef TRILINOS
+OBJ+=LowOrderProblem.o \
+		SimParams.o \
+		DiscretePDE_1D1Ves.o \
+		DiscretePDE_1D3Vem.o \
+		PhysBasedPrec.o \
+		DiffMath.o \
+		JFNK.o \
+		StagMesh.o \
+		MapManager.o \
+		MLSolver.o \
+		HoLoInterface.o
+		
+OBJ+=LowOrderProblem2D.o \
+		DiscretePDE2D_1D1Ves.o \
+		DiscretePDE2D_1D3Vem.o \
+		DiscretePDE2D_2D3Vem.o \
+		PhysBasedPrec2D.o \
+		JFNK2D.o \
+		MapManager2D.o \
+		MLSolver2D.o \
+		HoLoInterface2D.o \
+		EpVecWrapper.o
+endif
+	
+	
+GPUOBJ:=ChargeTallyGPU.cu.o \
+		StressTallyGPU.cu.o \
+		CurrentTallyGPU.cu.o
+
+		
+GPUHOSTOBJ:= FieldDataGPUSimple.cu.o \
+			ParticleListGPUSorted.cu.o \
+			HOMomentsGPUs.cu.o \
+			GPU_Utils.cu.o \
+			ParticleObjNGPU.cu.o
+			
+			
+			
+ifneq ($(origin USECUDA),undefined)
+OBJ+= GPUObjects.o
+OBJ+= $(GPUHOSTOBJ)
+OBJ+= $(GPUOBJ)
+endif
+
+
+ASMS:=$(addprefix $(ASMDIR)/, $(OBJ:.o=.s))
+	
+OBJ:=$(addprefix $(OBJDIR)/, $(OBJ))
+
+LinkLIBS:=$(addprefix -l, $(LLIBS))
+
+LLIBS:=$(addprefix $(LIBDIR)/, $(LLIBS))
+
+
+
+
+GPUOBJ:=$(addprefix $(OBJDIR)/, $(GPUOBJ))
+
+GPUHOSTOBJ:=$(addprefix $(OBJDIR)/, $(GPUHOSTOBJ))
+
+EXECS:=$(addprefix $(BINDIR)/, $(EXECS))
+
+
+
+		
